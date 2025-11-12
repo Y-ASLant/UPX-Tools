@@ -1,11 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::{Deserialize, Serialize};
-use std::process::Command;
-use std::path::{Path, PathBuf};
-use std::fs;
 use encoding_rs::GBK;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
@@ -88,16 +88,16 @@ fn get_upx_path() -> Option<PathBuf> {
 async fn process_upx(options: UpxOptions) -> Result<String, String> {
     // 获取UPX可执行文件路径
     let upx_path = get_upx_path().ok_or("未找到 UPX 工具！请确保安装完整")?;
-    
+
     // 检查 UPX 是否可用
     let mut upx_check = Command::new(&upx_path);
-    
+
     // 在 Windows 上隐藏控制台窗口
     #[cfg(target_os = "windows")]
     upx_check.creation_flags(CREATE_NO_WINDOW);
-    
+
     let upx_check = upx_check.arg("--version").output();
-    
+
     if upx_check.is_err() {
         return Err("UPX 工具无法执行！".to_string());
     }
@@ -109,9 +109,9 @@ async fn process_upx(options: UpxOptions) -> Result<String, String> {
 
     // 检查文件是否可写（如果需要覆盖）
     if options.input_file == options.output_file {
-        let metadata = fs::metadata(&options.input_file)
-            .map_err(|e| format!("无法读取文件属性: {}", e))?;
-        
+        let metadata =
+            fs::metadata(&options.input_file).map_err(|e| format!("无法读取文件属性: {}", e))?;
+
         if metadata.permissions().readonly() {
             return Err(format!("文件为只读，请先修改文件属性"));
         }
@@ -127,14 +127,14 @@ async fn process_upx(options: UpxOptions) -> Result<String, String> {
 
     // 构建 UPX 命令
     let mut cmd = Command::new(&upx_path);
-    
+
     // 在 Windows 上隐藏控制台窗口
     #[cfg(target_os = "windows")]
     cmd.creation_flags(CREATE_NO_WINDOW);
-    
+
     // 判断是否覆盖原文件
     let is_overwrite = options.input_file == options.output_file;
-    
+
     match options.mode.as_str() {
         "compress" => {
             // 加壳模式
@@ -146,12 +146,12 @@ async fn process_upx(options: UpxOptions) -> Result<String, String> {
             } else {
                 cmd.arg(format!("-{}", options.compression_level));
             }
-            
+
             // 添加强制压缩参数
             if options.force {
                 cmd.arg("--force");
             }
-            
+
             if is_overwrite {
                 // 直接覆盖原文件，不使用 -o 参数
                 cmd.arg(&options.input_file);
@@ -166,12 +166,12 @@ async fn process_upx(options: UpxOptions) -> Result<String, String> {
         "decompress" => {
             // 脱壳模式
             cmd.arg("-d");
-            
+
             // 添加强制压缩参数（脱壳时也可能需要）
             if options.force {
                 cmd.arg("--force");
             }
-            
+
             if is_overwrite {
                 // 直接覆盖原文件
                 cmd.arg(&options.input_file);
@@ -192,30 +192,30 @@ async fn process_upx(options: UpxOptions) -> Result<String, String> {
     let original_size = fs::metadata(&options.input_file)
         .map(|m| m.len())
         .unwrap_or(0);
-    
+
     // 在后台线程执行命令，避免阻塞 UI
     let output_file_clone = options.output_file.clone();
     let original_size_clone = original_size;
-    
+
     tokio::task::spawn_blocking(move || {
         match cmd.output() {
             Ok(output) => {
                 // 在 Windows 上 UPX 输出是 GBK 编码，需要转换为 UTF-8
                 let (stdout, _, _) = GBK.decode(&output.stdout);
                 let (stderr, _, _) = GBK.decode(&output.stderr);
-                
+
                 if output.status.success() {
                     // 获取处理后的文件大小
                     let output_size = fs::metadata(&output_file_clone)
                         .map(|m| m.len())
                         .unwrap_or(0);
-                    
+
                     let ratio = if original_size_clone > 0 {
                         (output_size as f64 / original_size_clone as f64 * 100.0) as i32
                     } else {
                         100
                     };
-                    
+
                     let result = format!(
                         "操作成功!\n输出: {}\n原始大小: {}\n处理后大小: {}\n压缩率: {}%\n\nUPX 输出:\n{}{}",
                         output_file_clone,
@@ -259,11 +259,11 @@ fn format_bytes(bytes: u64) -> String {
 // 扫描文件夹获取所有exe和dll文件
 fn scan_folder_recursive(folder_path: &Path, include_subfolders: bool) -> Vec<String> {
     let mut files = Vec::new();
-    
+
     if let Ok(entries) = fs::read_dir(folder_path) {
         for entry in entries.flatten() {
             let path = entry.path();
-            
+
             if path.is_dir() && include_subfolders {
                 // 递归扫描子文件夹
                 let sub_files = scan_folder_recursive(&path, include_subfolders);
@@ -280,22 +280,22 @@ fn scan_folder_recursive(folder_path: &Path, include_subfolders: bool) -> Vec<St
             }
         }
     }
-    
+
     files
 }
 
 #[tauri::command]
 fn scan_folder(options: ScanFolderOptions) -> Result<Vec<String>, String> {
     let path = Path::new(&options.folder_path);
-    
+
     if !path.exists() {
         return Err(format!("路径不存在: {}", options.folder_path));
     }
-    
+
     if !path.is_dir() {
         return Err(format!("不是文件夹: {}", options.folder_path));
     }
-    
+
     Ok(scan_folder_recursive(path, options.include_subfolders))
 }
 
@@ -303,13 +303,13 @@ fn scan_folder(options: ScanFolderOptions) -> Result<Vec<String>, String> {
 #[tauri::command]
 fn get_upx_version() -> Result<String, String> {
     let upx_path = get_upx_path().ok_or("未找到 UPX 工具！")?;
-    
+
     let mut cmd = Command::new(&upx_path);
-    
+
     // 在 Windows 上隐藏控制台窗口
     #[cfg(target_os = "windows")]
     cmd.creation_flags(CREATE_NO_WINDOW);
-    
+
     match cmd.arg("--version").output() {
         Ok(output) => {
             let (version_str, _, _) = GBK.decode(&output.stdout);
@@ -320,7 +320,7 @@ fn get_upx_version() -> Result<String, String> {
                 Err("无法获取UPX版本".to_string())
             }
         }
-        Err(_) => Err("UPX未找到".to_string())
+        Err(_) => Err("UPX未找到".to_string()),
     }
 }
 
@@ -346,7 +346,10 @@ async fn refresh_icon_cache() -> Result<(), String> {
                 let _ = fs::remove_file(&cache_db);
 
                 // 删除缩略图缓存
-                let explorer_path = format!("{}\\AppData\\Local\\Microsoft\\Windows\\Explorer", userprofile);
+                let explorer_path = format!(
+                    "{}\\AppData\\Local\\Microsoft\\Windows\\Explorer",
+                    userprofile
+                );
                 if let Ok(entries) = fs::read_dir(&explorer_path) {
                     for entry in entries.flatten() {
                         let path = entry.path();
@@ -375,10 +378,9 @@ async fn refresh_icon_cache() -> Result<(), String> {
 #[tauri::command]
 fn save_config(config: AppConfig) -> Result<(), String> {
     let config_path = get_config_path().ok_or("无法获取配置文件路径")?;
-    let json = serde_json::to_string_pretty(&config)
-        .map_err(|e| format!("序列化配置失败: {}", e))?;
-    fs::write(&config_path, json)
-        .map_err(|e| format!("保存配置文件失败: {}", e))
+    let json =
+        serde_json::to_string_pretty(&config).map_err(|e| format!("序列化配置失败: {}", e))?;
+    fs::write(&config_path, json).map_err(|e| format!("保存配置文件失败: {}", e))
 }
 
 // 加载配置
@@ -390,11 +392,9 @@ fn load_config() -> Result<AppConfig, String> {
         return Ok(AppConfig::default());
     }
 
-    let json = fs::read_to_string(&config_path)
-        .map_err(|e| format!("读取配置文件失败: {}", e))?;
+    let json = fs::read_to_string(&config_path).map_err(|e| format!("读取配置文件失败: {}", e))?;
 
-    serde_json::from_str(&json)
-        .map_err(|e| format!("解析配置文件失败: {}", e))
+    serde_json::from_str(&json).map_err(|e| format!("解析配置文件失败: {}", e))
 }
 
 fn main() {

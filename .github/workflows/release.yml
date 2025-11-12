@@ -56,13 +56,23 @@ jobs:
         shell: pwsh
         run: |
           New-Item -Path "release" -ItemType Directory -Force
-          # 复制文件
+          # 获取版本号
+          $version = "${env:GITHUB_REF}" -replace "refs/tags/v", ""
+          
+          # 复制并重命名 MSI 文件
           Get-ChildItem -Path "src-tauri/target/release/bundle/msi/*.msi" -ErrorAction SilentlyContinue | ForEach-Object {
-            Copy-Item $_.FullName -Destination "release/"
+            $newName = "UPX-Tools-${version}-x64.msi"
+            Copy-Item $_.FullName -Destination "release/$newName"
+            Write-Host "Created: $newName"
           }
+          
+          # 复制并重命名 NSIS 文件
           Get-ChildItem -Path "src-tauri/target/release/bundle/nsis/*.exe" -ErrorAction SilentlyContinue | ForEach-Object {
-            Copy-Item $_.FullName -Destination "release/"
+            $newName = "UPX-Tools-${version}-x64-setup.exe"
+            Copy-Item $_.FullName -Destination "release/$newName"
+            Write-Host "Created: $newName"
           }
+          
           Get-ChildItem -Path "release/" -Recurse | ForEach-Object { Write-Host $_.Name }
 
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "UPX加壳脱壳",
+  "productName": "UPX-Tools",
   "version": "1.0.0",
   "identifier": "top.aslant.upxgui",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "UPX加壳脱壳",
+        "title": "UPX-Tools",
         "width": 1000,
         "height": 800,
         "minWidth": 900,

@@ -104,7 +104,7 @@ UPX-GUI/
 
 ```bash
 # 进入项目目录
-cd UPX-GUI
+cd UPX-Tools
 
 # 启动开发服务器
 cargo tauri dev
@@ -137,4 +137,5 @@ cargo tauri build
 ## 相关链接
 
 UPX 官方仓库: https://github.com/upx/upx
+
 Tauri 官方文档: https://tauri.app

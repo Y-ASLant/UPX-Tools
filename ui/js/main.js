@@ -136,7 +136,7 @@ function initTitleClick() {
         try {
             // 使用 Tauri 的 shell 插件打开 URL
             const { open } = window.__TAURI__.shell
-            await open('https://github.com/Y-ASLant/UPX-GUI')
+            await open('https://github.com/Y-ASLant/UPX-Tools')
             addLog('已在浏览器中打开 GitHub 仓库', 'info')
         } catch (error) {
             addLog(`打开链接失败: ${error}`, 'error')

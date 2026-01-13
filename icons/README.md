@@ -21,9 +21,3 @@
 - [Favicon.io](https://favicon.io/)
 - [RealFaviconGenerator](https://realfavicongenerator.net/)
 
-## 临时方案
-
-如果暂时没有图标，可以从 timer 项目复制图标文件：
-```
-copy e:\Code_Repository\timer\icons\*.* f:\Code\tools\upx-gui\icons\
-```

@@ -1,6 +1,6 @@
 [package]
-name = "upx-gui"
-version = "1.0.0"
+name = "UPX-Tools"
+version = "1.1.0"
 description = "UPX 可视化加壳脱壳工具"
 authors = ["ASLant"]
 edition = "2021"

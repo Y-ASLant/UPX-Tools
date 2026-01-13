@@ -115,7 +115,7 @@ npm run check
 ### 项目结构
 
 ```
-UPX-GUI/
+UPX-Tools/
 ├── ui/                 # 前端代码
 │   ├── index.html     # 主页面
 │   ├── css/           # 样式文件

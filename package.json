@@ -1,18 +1,25 @@
 {
     "name": "upx-gui",
     "version": "1.0.0",
+    "type": "module",
     "description": "UPX 可视化加壳/脱壳工具",
     "scripts": {
         "lint": "eslint \"ui/**/*.{js,html}\" --max-warnings 0",
         "lint:fix": "eslint \"ui/**/*.{js,html}\" --fix",
         "format": "prettier --write \"ui/**/*.{js,html,css}\"",
         "format:check": "prettier --check \"ui/**/*.{js,html,css}\"",
-        "check": "npm run lint && npm run format:check"
+        "check": "npm run lint && npm run format:check",
+        "build:css": "npx tailwindcss -i ./ui/css/main.css -o ./ui/css/tailwind.css --minify",
+        "watch:css": "npx tailwindcss -i ./ui/css/main.css -o ./ui/css/tailwind.css --watch"
     },
     "devDependencies": {
+        "autoprefixer": "^10.4.23",
         "eslint": "^8.57.1",
         "eslint-plugin-html": "^8.1.1",
-        "prettier": "^3.3.3"
+        "postcss": "^8.5.6",
+        "postcss-cli": "^11.0.1",
+        "prettier": "^3.3.3",
+        "tailwindcss": "^3.4.19"
     },
     "private": true
 }

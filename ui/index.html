@@ -4,8 +4,8 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>UPX GUI</title>
-        <!-- 本地化 Tailwind CSS - 仅包含使用的类，优化性能 -->
-        <link rel="stylesheet" href="css/tailwind-custom.css" />
+        <!-- Tailwind CSS - 完整版，支持所有现代语法 -->
+        <link rel="stylesheet" href="css/tailwind.css" />
         <link rel="stylesheet" href="css/style.css" />
         <!-- 预加载关键资源 -->
         <link rel="preload" href="js/main.js" as="script" />
@@ -206,7 +206,7 @@
         <!-- 全局设置弹窗 -->
         <div
             id="settings-modal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
+            class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
         >
             <div
                 class="bg-white shadow-2xl p-6 w-full mx-4 modal-content"

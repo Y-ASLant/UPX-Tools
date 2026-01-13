@@ -312,3 +312,27 @@ input[type='range'].slider::-moz-range-thumb:active {
     background: linear-gradient(to bottom right, #d1fae5, #a7f3d0) !important;
     border-color: #059669 !important;
 }
+
+/* 弹窗动画 - 遮罩淡入 */
+.modal-backdrop {
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+}
+
+/* 弹窗内容动画 - 缩放+平移 */
+.modal-content {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+    transition:
+        opacity 0.25s ease-out,
+        transform 0.25s ease-out;
+}
+
+.modal-backdrop.show .modal-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}

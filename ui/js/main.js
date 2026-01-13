@@ -224,11 +224,20 @@ function getCompressionLevel() {
 // 显示设置弹窗
 function showSettingsModal() {
     settingsModal.classList.remove('hidden')
+    // 强制重排以触发动画
+    void settingsModal.offsetHeight
+    settingsModal.classList.add('show')
 }
 
 // 隐藏设置弹窗
 function hideSettingsModal() {
-    settingsModal.classList.add('hidden')
+    settingsModal.classList.remove('show')
+    // 等待动画结束后再隐藏
+    setTimeout(() => {
+        if (!settingsModal.classList.contains('show')) {
+            settingsModal.classList.add('hidden')
+        }
+    }, 250)
 }
 
 // 扫描文件夹获取所有exe和dll文件

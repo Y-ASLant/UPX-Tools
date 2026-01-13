@@ -206,11 +206,11 @@
         <!-- 全局设置弹窗 -->
         <div
             id="settings-modal"
-            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
         >
             <div
-                class="bg-white shadow-2xl p-6 w-full mx-4 transform transition-all"
-                style="border-radius: 0.5rem; max-width: 700px"
+                class="bg-white shadow-2xl p-6 w-full mx-4 modal-content"
+                style="border-radius: 0.3rem; max-width: 700px"
             >
                 <h2 class="text-xl font-semibold text-gray-800 mb-5">全局设置</h2>
 
@@ -348,10 +348,11 @@
                     </div>
                 </div>
 
-                <div class="flex mt-6 pt-5 border-t border-gray-200">
+                <div class="flex mt-6">
                     <button
                         id="close-settings"
-                        class="w-full py-2.5 px-6 bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 active:bg-blue-700 transition-colors shadow-md hover:shadow-lg rounded-lg"
+                        class="w-full py-2.5 px-6 bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 active:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                        style="border-radius: 0.3rem"
                     >
                         保存设置
                     </button>

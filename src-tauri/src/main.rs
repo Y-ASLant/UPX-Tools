@@ -662,11 +662,8 @@ async fn download_and_install(url: String, filename: String) -> Result<String, S
 
 /// 比较版本号，返回 latest > current
 fn version_compare(latest: &str, current: &str) -> bool {
-    let parse_version = |v: &str| -> Vec<u32> {
-        v.split('.')
-            .filter_map(|s| s.parse().ok())
-            .collect()
-    };
+    let parse_version =
+        |v: &str| -> Vec<u32> { v.split('.').filter_map(|s| s.parse().ok()).collect() };
 
     let latest_parts = parse_version(latest);
     let current_parts = parse_version(current);

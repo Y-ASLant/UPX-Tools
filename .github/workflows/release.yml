@@ -49,8 +49,19 @@ jobs:
       - name: Copy portable exe to bundle
         shell: pwsh
         run: |
-          New-Item -Path "src-tauri/target/release/bundle/Portable" -ItemType Directory -Force
-          Copy-Item "src-tauri/target/release/UPX-Tools.exe" "src-tauri/target/release/bundle/Portable/"
+          Write-Host "=== Checking release directory ==="
+          Get-ChildItem -Path "src-tauri/target/release/" -Filter "*.exe" | ForEach-Object { Write-Host $_.FullName }
+          
+          $sourceExe = "src-tauri/target/release/UPX-Tools.exe"
+          if (Test-Path $sourceExe) {
+            New-Item -Path "src-tauri/target/release/bundle/Portable" -ItemType Directory -Force
+            Copy-Item $sourceExe "src-tauri/target/release/bundle/Portable/"
+            Write-Host "Portable exe copied successfully"
+          } else {
+            Write-Host "WARNING: $sourceExe not found!"
+            Write-Host "Available files:"
+            Get-ChildItem -Path "src-tauri/target/release/" -Recurse -Filter "*.exe" | ForEach-Object { Write-Host $_.FullName }
+          }
 
 
       - name: Get version from tag
@@ -63,32 +74,45 @@ jobs:
         shell: pwsh
         run: |
           New-Item -Path "release" -ItemType Directory -Force
-          # 获取版本号
           $version = "${env:GITHUB_REF}" -replace "refs/tags/v", ""
+          Write-Host "=== Version: $version ==="
           
           # 复制便携版 (单文件，已嵌入 UPX)
           $portableExe = "src-tauri/target/release/bundle/Portable/UPX-Tools.exe"
+          Write-Host "Checking portable: $portableExe"
           if (Test-Path $portableExe) {
             $newName = "UPX-Tools-${version}-x64-portable.exe"
             Copy-Item $portableExe -Destination "release/$newName"
-            Write-Host "Created: $newName"
+            Write-Host "✓ Created: $newName"
+          } else {
+            # 尝试从 release 目录直接复制
+            $fallbackExe = "src-tauri/target/release/UPX-Tools.exe"
+            Write-Host "Portable not found, trying fallback: $fallbackExe"
+            if (Test-Path $fallbackExe) {
+              $newName = "UPX-Tools-${version}-x64-portable.exe"
+              Copy-Item $fallbackExe -Destination "release/$newName"
+              Write-Host "✓ Created (fallback): $newName"
+            } else {
+              Write-Host "✗ Portable exe not found!"
+            }
           }
           
           # 复制并重命名 MSI 文件
           Get-ChildItem -Path "src-tauri/target/release/bundle/msi/*.msi" -ErrorAction SilentlyContinue | ForEach-Object {
             $newName = "UPX-Tools-${version}-x64.msi"
             Copy-Item $_.FullName -Destination "release/$newName"
-            Write-Host "Created: $newName"
+            Write-Host "✓ Created: $newName"
           }
           
           # 复制并重命名 NSIS 文件
           Get-ChildItem -Path "src-tauri/target/release/bundle/nsis/*.exe" -ErrorAction SilentlyContinue | ForEach-Object {
             $newName = "UPX-Tools-${version}-x64-setup.exe"
             Copy-Item $_.FullName -Destination "release/$newName"
-            Write-Host "Created: $newName"
+            Write-Host "✓ Created: $newName"
           }
           
-          Get-ChildItem -Path "release/" -Recurse | ForEach-Object { Write-Host $_.Name }
+          Write-Host "=== Release files ==="
+          Get-ChildItem -Path "release/" | ForEach-Object { Write-Host "  - $($_.Name) ($($_.Length) bytes)" }
 
 
       - name: Upload release assets

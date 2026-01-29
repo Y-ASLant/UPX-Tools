@@ -4,38 +4,37 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>UPX GUI</title>
-        <!-- Tailwind CSS - 完整版，支持所有现代语法 -->
+        <!-- Tailwind CSS -->
         <link rel="stylesheet" href="css/tailwind.css" />
         <link rel="stylesheet" href="css/style.css" />
         <!-- 预加载关键资源 -->
         <link rel="preload" href="js/main.js" as="script" />
     </head>
-    <body class="h-screen overflow-hidden bg-gray-50" oncontextmenu="return false">
+    <body class="h-screen overflow-hidden bg-background" oncontextmenu="return false">
         <!-- 标题栏 -->
         <div
             id="titlebar"
-            class="h-10 bg-white border-b border-gray-200 flex items-center justify-between px-4"
+            class="h-10 bg-card border-b border-border flex items-center justify-between px-3"
         >
-            <div data-tauri-drag-region class="flex items-center space-x-3 flex-1 h-full">
-                <div class="w-2 h-2 rounded-full bg-blue-500 breathing-light"></div>
+            <div data-tauri-drag-region class="flex items-center gap-3 flex-1 h-full">
+                <div class="w-2 h-2 rounded-full bg-primary breathing-light"></div>
                 <span
                     id="app-title"
-                    class="text-gray-700 text-xs font-medium select-none cursor-pointer hover:text-blue-600 transition-colors"
+                    class="text-foreground text-xs font-medium select-none cursor-pointer hover:text-muted-foreground transition-colors"
                     title="访问 GitHub 仓库"
                 >
                     UPX-加壳脱壳
                 </span>
-                <span id="upx-version" class="text-gray-400 text-xs select-none"></span>
+                <span id="upx-version" class="text-muted-foreground text-xs select-none"></span>
             </div>
-            <div class="flex items-center space-x-1">
+            <div class="flex items-center gap-0.5">
                 <button
                     id="refresh-icon-btn"
-                    class="w-9 h-9 bg-transparent hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                    style="border-radius: 0.3rem"
+                    class="btn btn-ghost w-9 h-9 p-0"
                     title="刷新图标缓存"
                 >
                     <svg
-                        class="w-4 h-4 text-gray-600"
+                        class="w-4 h-4 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -48,14 +47,9 @@
                         />
                     </svg>
                 </button>
-                <button
-                    id="settings-btn"
-                    class="w-9 h-9 bg-transparent hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                    style="border-radius: 0.3rem"
-                    title="设置"
-                >
+                <button id="settings-btn" class="btn btn-ghost w-9 h-9 p-0" title="设置">
                     <svg
-                        class="w-4 h-4 text-gray-600"
+                        class="w-4 h-4 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -74,13 +68,9 @@
                         />
                     </svg>
                 </button>
-                <button
-                    id="titlebar-minimize"
-                    class="w-9 h-9 bg-transparent hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                    style="border-radius: 0.3rem"
-                >
+                <button id="titlebar-minimize" class="btn btn-ghost w-9 h-9 p-0">
                     <svg
-                        class="w-4 h-4 text-gray-600"
+                        class="w-4 h-4 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -93,13 +83,9 @@
                         ></path>
                     </svg>
                 </button>
-                <button
-                    id="titlebar-maximize"
-                    class="w-9 h-9 bg-transparent hover:bg-gray-100 flex items-center justify-center transition-all duration-200"
-                    style="border-radius: 0.3rem"
-                >
+                <button id="titlebar-maximize" class="btn btn-ghost w-9 h-9 p-0">
                     <svg
-                        class="w-4 h-4 text-gray-600"
+                        class="w-4 h-4 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -114,11 +100,10 @@
                 </button>
                 <button
                     id="titlebar-close"
-                    class="w-9 h-9 bg-transparent hover:bg-red-50 flex items-center justify-center transition-all duration-200 group"
-                    style="border-radius: 0.3rem"
+                    class="btn btn-ghost w-9 h-9 p-0 hover:bg-destructive/10 group"
                 >
                     <svg
-                        class="w-4 h-4 text-gray-600 group-hover:text-red-600"
+                        class="w-4 h-4 text-muted-foreground group-hover:text-destructive"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -135,70 +120,67 @@
         </div>
 
         <!-- 主内容区 -->
-        <div class="h-[calc(100vh-2.5rem)] flex flex-col p-6">
+        <div class="h-[calc(100vh-2.5rem)] flex flex-col p-5 gap-4">
             <!-- 操作选择 -->
-            <div
-                class="bg-white shadow-lg p-6 border border-gray-200 mb-6"
-                style="border-radius: 0.3rem"
-            >
-                <div class="grid grid-cols-2 gap-6">
-                    <button
-                        id="compress-btn"
-                        class="drop-zone group relative py-8 px-6 border-2 border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all shadow-md hover:shadow-xl transform hover:-translate-y-1"
-                        style="border-radius: 0.3rem"
+            <div class="grid grid-cols-2 gap-4">
+                <button
+                    id="compress-btn"
+                    class="drop-zone group relative py-6 px-5 bg-secondary/50 border border-border rounded-lg hover:border-primary hover:bg-accent transition-all cursor-pointer outline-none focus:outline-none"
+                >
+                    <svg
+                        class="w-10 h-10 mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors drop-icon"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                     >
-                        <svg
-                            class="w-16 h-16 mx-auto mb-3 text-blue-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                        </svg>
-                        <div class="text-xl text-blue-700 mb-2">加壳压缩</div>
-                        <div class="text-sm text-blue-600">点击选择或拖放文件/文件夹到此处</div>
-                    </button>
-                    <button
-                        id="decompress-btn"
-                        class="drop-zone group relative py-8 px-6 border-2 border-green-500 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 transition-all shadow-md hover:shadow-xl transform hover:-translate-y-1"
-                        style="border-radius: 0.3rem"
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                    </svg>
+                    <div
+                        class="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors"
                     >
-                        <svg
-                            class="w-16 h-16 mx-auto mb-3 text-green-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-                            />
-                        </svg>
-                        <div class="text-xl text-green-700 mb-2">脱壳解压</div>
-                        <div class="text-sm text-green-600">点击选择或拖放文件/文件夹到此处</div>
-                    </button>
-                </div>
+                        加壳压缩
+                    </div>
+                    <div class="text-xs text-muted-foreground">点击选择或拖放文件/文件夹到此处</div>
+                </button>
+                <button
+                    id="decompress-btn"
+                    class="drop-zone group relative py-6 px-5 bg-secondary/50 border border-border rounded-lg hover:border-primary hover:bg-accent transition-all cursor-pointer outline-none focus:outline-none"
+                >
+                    <svg
+                        class="w-10 h-10 mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors drop-icon"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                        />
+                    </svg>
+                    <div
+                        class="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors"
+                    >
+                        脱壳解压
+                    </div>
+                    <div class="text-xs text-muted-foreground">点击选择或拖放文件/文件夹到此处</div>
+                </button>
             </div>
 
             <!-- 日志输出 -->
-            <div
-                class="bg-white shadow-lg p-6 border border-gray-200 flex-1 flex flex-col min-h-0"
-                style="border-radius: 0.3rem"
-            >
-                <h2 class="text-lg font-bold text-gray-800 mb-4">执行日志</h2>
+            <div class="card p-5 flex-1 flex flex-col min-h-0">
+                <h2 class="text-sm font-semibold text-foreground mb-3">执行日志</h2>
                 <div
                     id="log-output"
-                    class="flex-1 bg-gray-900 text-green-400 font-mono text-sm p-4 overflow-y-auto overflow-x-hidden"
-                    style="border-radius: 0.3rem"
+                    class="flex-1 bg-primary text-primary-foreground font-mono text-sm p-4 overflow-y-auto overflow-x-hidden rounded-md"
                 >
-                    <div class="text-gray-500">等待操作...</div>
+                    <div class="text-primary-foreground/50">等待操作...</div>
                 </div>
             </div>
         </div>
@@ -206,51 +188,36 @@
         <!-- 全局设置弹窗 -->
         <div
             id="settings-modal"
-            class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
+            class="hidden fixed inset-0 bg-foreground/80 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
         >
-            <div
-                class="bg-white shadow-2xl p-6 w-full mx-4 modal-content"
-                style="border-radius: 0.3rem; max-width: 700px"
-            >
-                <h2 class="text-xl font-semibold text-gray-800 mb-5">全局设置</h2>
+            <div class="card p-6 w-full mx-4 modal-content" style="max-width: 640px">
+                <h2 class="text-lg font-semibold text-foreground mb-5">全局设置</h2>
 
                 <div class="space-y-5">
                     <!-- 压缩级别 -->
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="bg-muted p-4 rounded-md">
                         <div class="flex items-center justify-between mb-3">
-                            <label class="text-sm font-semibold text-gray-700">压缩级别</label>
-                            <span id="level-display" class="text-base font-bold text-blue-600">
+                            <label class="text-sm font-medium text-foreground">压缩级别</label>
+                            <span id="level-display" class="text-sm font-semibold text-primary">
                                 级别 9
                             </span>
                         </div>
 
-                        <div class="relative mb-2">
+                        <div class="relative">
                             <input
                                 type="range"
                                 id="compression-level"
                                 min="1"
                                 max="10"
                                 value="9"
-                                class="w-full h-2 bg-gray-200 appearance-none cursor-pointer slider"
-                                style="border-radius: 0.3rem"
+                                class="w-full appearance-none cursor-pointer slider"
                             />
                         </div>
 
-                        <!-- 级别标记 -->
-                        <div class="flex justify-between px-1 mb-2">
-                            <span class="text-xs text-gray-400">1</span>
-                            <span class="text-xs text-gray-400">2</span>
-                            <span class="text-xs text-gray-400">3</span>
-                            <span class="text-xs text-gray-400">4</span>
-                            <span class="text-xs text-gray-400">5</span>
-                            <span class="text-xs text-gray-400">6</span>
-                            <span class="text-xs text-gray-400">7</span>
-                            <span class="text-xs text-gray-400">8</span>
-                            <span class="text-xs text-gray-400">9</span>
-                            <span class="text-xs text-gray-600 font-semibold">best</span>
-                        </div>
-
-                        <p id="level-description" class="text-xs text-gray-500 text-center">
+                        <p
+                            id="level-description"
+                            class="text-xs text-muted-foreground text-center mt-3"
+                        >
                             推荐级别，平衡速度和压缩率
                         </p>
                     </div>
@@ -258,89 +225,91 @@
                     <!-- 选项列表 - 双列布局 -->
                     <div class="grid grid-cols-2 gap-3">
                         <label
-                            class="flex items-start space-x-2.5 cursor-pointer p-3 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all rounded-lg"
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
                         >
                             <input
                                 type="checkbox"
                                 id="overwrite"
                                 checked
-                                class="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
                             />
                             <div class="flex-1 min-w-0">
-                                <span class="text-sm font-semibold text-gray-800 block">
+                                <span class="text-sm font-medium text-foreground block">
                                     覆盖原文件
                                 </span>
-                                <p class="text-xs text-gray-500 mt-0.5">
+                                <p class="text-xs text-muted-foreground mt-0.5">
                                     直接替换原文件，不创建新文件
                                 </p>
                             </div>
                         </label>
 
                         <label
-                            class="flex items-start space-x-2.5 cursor-pointer p-3 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all rounded-lg"
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
                         >
                             <input
                                 type="checkbox"
                                 id="backup"
-                                class="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
                             />
                             <div class="flex-1 min-w-0">
-                                <span class="text-sm font-semibold text-gray-800 block">
+                                <span class="text-sm font-medium text-foreground block">
                                     备份原文件
                                 </span>
-                                <p class="text-xs text-gray-500 mt-0.5">保留 .bak 备份文件</p>
+                                <p class="text-xs text-muted-foreground mt-0.5">
+                                    保留 .bak 备份文件
+                                </p>
                             </div>
                         </label>
 
                         <label
-                            class="flex items-start space-x-2.5 cursor-pointer p-3 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all rounded-lg"
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
                         >
                             <input
                                 type="checkbox"
                                 id="ultra-brute"
-                                class="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
                             />
                             <div class="flex-1 min-w-0">
-                                <span class="text-sm font-semibold text-gray-800 block">
+                                <span class="text-sm font-medium text-foreground block">
                                     极限压缩
                                 </span>
-                                <p class="text-xs text-gray-500 mt-0.5">
+                                <p class="text-xs text-muted-foreground mt-0.5">
                                     尝试所有压缩方法，速度较慢但压缩率最高
                                 </p>
                             </div>
                         </label>
 
                         <label
-                            class="flex items-start space-x-2.5 cursor-pointer p-3 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all rounded-lg"
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
                         >
                             <input
                                 type="checkbox"
                                 id="include-subfolders"
-                                class="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
                             />
                             <div class="flex-1 min-w-0">
-                                <span class="text-sm font-semibold text-gray-800 block">
+                                <span class="text-sm font-medium text-foreground block">
                                     包含子文件夹
                                 </span>
-                                <p class="text-xs text-gray-500 mt-0.5">
+                                <p class="text-xs text-muted-foreground mt-0.5">
                                     处理文件夹时，递归处理所有子目录
                                 </p>
                             </div>
                         </label>
 
                         <label
-                            class="flex items-start space-x-2.5 cursor-pointer p-3 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all rounded-lg col-span-2"
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md col-span-2"
                         >
                             <input
                                 type="checkbox"
                                 id="force-compress"
-                                class="w-4 h-4 mt-0.5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer flex-shrink-0"
+                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
                             />
                             <div class="flex-1 min-w-0">
-                                <span class="text-sm font-semibold text-gray-800 block">
+                                <span class="text-sm font-medium text-foreground block">
                                     强制压缩
                                 </span>
-                                <p class="text-xs text-gray-500 mt-0.5">
+                                <p class="text-xs text-muted-foreground mt-0.5">
                                     强制处理受保护的文件（如 GUARD_CF），可能移除安全特性
                                 </p>
                             </div>
@@ -351,8 +320,7 @@
                 <div class="flex mt-6">
                     <button
                         id="close-settings"
-                        class="w-full py-2.5 px-6 bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 active:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-                        style="border-radius: 0.3rem"
+                        class="btn btn-primary w-full py-2.5 px-6 text-sm rounded-sm"
                     >
                         保存设置
                     </button>

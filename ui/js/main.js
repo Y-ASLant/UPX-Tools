@@ -316,12 +316,47 @@ async function checkAndScanPath(path) {
 
 async function setupDragAndDrop() {
     await listen('tauri://drag-drop', handleDragDrop)
-    setupVisualFeedback(compressBtn)
-    setupVisualFeedback(decompressBtn)
+    await listen('tauri://drag-enter', handleDragEnter)
+    await listen('tauri://drag-over', handleDragOver)
+    await listen('tauri://drag-leave', handleDragLeave)
+}
+
+function handleDragEnter(event) {
+    const { position } = event.payload
+    updateDragVisual(position)
+}
+
+function handleDragOver(event) {
+    const { position } = event.payload
+    updateDragVisual(position)
+}
+
+function handleDragLeave() {
+    compressBtn.classList.remove('drag-over')
+    decompressBtn.classList.remove('drag-over')
+}
+
+function updateDragVisual(position) {
+    const dropTarget = getDropTarget(position)
+
+    if (dropTarget === 'compress') {
+        compressBtn.classList.add('drag-over')
+        decompressBtn.classList.remove('drag-over')
+    } else if (dropTarget === 'decompress') {
+        decompressBtn.classList.add('drag-over')
+        compressBtn.classList.remove('drag-over')
+    } else {
+        compressBtn.classList.remove('drag-over')
+        decompressBtn.classList.remove('drag-over')
+    }
 }
 
 async function handleDragDrop(event) {
     const { paths, position } = event.payload
+
+    // 移除拖拽视觉效果
+    compressBtn.classList.remove('drag-over')
+    decompressBtn.classList.remove('drag-over')
 
     if (!paths?.length) return
 
@@ -401,24 +436,6 @@ function getDropTarget(position) {
     }
 
     return null
-}
-
-// 为元素设置视觉反馈
-function setupVisualFeedback(element) {
-    const handleDragEnter = (e) => {
-        e.preventDefault()
-        element.classList.add('drag-over')
-    }
-
-    const handleDragLeave = () => {
-        element.classList.remove('drag-over')
-    }
-
-    // 使用被动事件监听器优化性能
-    element.addEventListener('dragenter', handleDragEnter, { passive: false })
-    element.addEventListener('dragover', handleDragEnter, { passive: false })
-    element.addEventListener('dragleave', handleDragLeave, { passive: true })
-    element.addEventListener('drop', handleDragLeave, { passive: true })
 }
 
 async function handleCompress() {
@@ -551,7 +568,7 @@ function parseProcessError(errorMsg) {
     const ERROR_PATTERNS = [
         { test: (s) => s.includes('[错误]'), type: 'error' },
         { test: (s) => s.includes('解决方案:') || s.includes('可能原因:'), type: 'warning' },
-        { test: (s) => s.trim().startsWith('-'), type: 'info' },
+        { test: (s) => s.trim().startsWith('-'), type: 'hint' },
     ]
 
     errorMsg.split('\n').forEach((line, index) => {
@@ -562,7 +579,7 @@ function parseProcessError(errorMsg) {
         if (match) {
             addLog(line, match.type)
         } else {
-            addLog(line, index === 0 ? 'error' : 'warning')
+            addLog(line, index === 0 ? 'error' : 'hint')
         }
     })
 }

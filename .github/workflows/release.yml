@@ -10,6 +10,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   release:
@@ -45,6 +46,12 @@ jobs:
         working-directory: ./src-tauri
         run: cargo tauri build --verbose
 
+      - name: Copy portable exe to bundle
+        shell: pwsh
+        run: |
+          New-Item -Path "src-tauri/target/release/bundle/Portable" -ItemType Directory -Force
+          Copy-Item "src-tauri/target/release/UPX-Tools.exe" "src-tauri/target/release/bundle/Portable/"
+
 
       - name: Get version from tag
         id: get_version
@@ -58,6 +65,14 @@ jobs:
           New-Item -Path "release" -ItemType Directory -Force
           # 获取版本号
           $version = "${env:GITHUB_REF}" -replace "refs/tags/v", ""
+          
+          # 复制便携版 (单文件，已嵌入 UPX)
+          $portableExe = "src-tauri/target/release/bundle/Portable/UPX-Tools.exe"
+          if (Test-Path $portableExe) {
+            $newName = "UPX-Tools-${version}-x64-portable.exe"
+            Copy-Item $portableExe -Destination "release/$newName"
+            Write-Host "Created: $newName"
+          }
           
           # 复制并重命名 MSI 文件
           Get-ChildItem -Path "src-tauri/target/release/bundle/msi/*.msi" -ErrorAction SilentlyContinue | ForEach-Object {

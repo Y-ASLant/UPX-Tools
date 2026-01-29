@@ -17,7 +17,7 @@
             class="h-10 bg-card border-b border-border flex items-center justify-between px-3"
         >
             <div data-tauri-drag-region class="flex items-center gap-3 flex-1 h-full">
-                <div class="w-2 h-2 rounded-full bg-primary breathing-light"></div>
+                <div class="w-2 h-2 rounded-full bg-green-500 breathing-light"></div>
                 <span
                     id="app-title"
                     class="text-foreground text-xs font-medium select-none cursor-pointer hover:text-muted-foreground transition-colors"
@@ -28,6 +28,21 @@
                 <span id="upx-version" class="text-muted-foreground text-xs select-none"></span>
             </div>
             <div class="flex items-center gap-0.5">
+                <button id="check-update-btn" class="btn btn-ghost w-9 h-9 p-0" title="检查更新">
+                    <svg
+                        class="w-4 h-4 text-muted-foreground"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                    </svg>
+                </button>
                 <button
                     id="refresh-icon-btn"
                     class="btn btn-ghost w-9 h-9 p-0"
@@ -43,7 +58,7 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                         />
                     </svg>
                 </button>
@@ -323,6 +338,76 @@
                         class="btn btn-primary w-full py-2.5 px-6 text-sm rounded-sm"
                     >
                         保存设置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 更新弹窗 -->
+        <div
+            id="update-modal"
+            class="hidden fixed inset-0 bg-foreground/80 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
+        >
+            <div class="card p-6 w-full mx-4 modal-content" style="max-width: 480px">
+                <div class="flex items-center gap-3 mb-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center"
+                    >
+                        <svg
+                            class="w-5 h-5 text-green-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-foreground">发现新版本</h2>
+                        <p id="update-version" class="text-sm text-muted-foreground"></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium text-foreground">更新内容</h3>
+                    <span id="update-date" class="text-xs text-muted-foreground"></span>
+                </div>
+                <div class="bg-muted p-4 rounded-md max-h-32 overflow-y-auto">
+                    <div id="update-notes" class="text-sm text-muted-foreground space-y-1"></div>
+                </div>
+
+                <div id="update-progress" class="hidden mt-6">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-2 bg-border rounded-full overflow-hidden">
+                            <div
+                                id="update-progress-bar"
+                                class="h-full bg-green-500 transition-all duration-300"
+                                style="width: 0%"
+                            ></div>
+                        </div>
+                        <span id="update-progress-text" class="text-xs text-muted-foreground w-8">
+                            0%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button
+                        id="update-later-btn"
+                        class="btn btn-ghost flex-1 py-2.5 px-6 text-sm rounded-sm"
+                    >
+                        稍后更新
+                    </button>
+                    <button
+                        id="update-now-btn"
+                        class="btn btn-primary flex-1 py-2.5 px-6 text-sm rounded-sm"
+                    >
+                        立即更新
                     </button>
                 </div>
             </div>

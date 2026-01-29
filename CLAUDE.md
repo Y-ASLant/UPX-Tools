@@ -50,11 +50,12 @@ npm run check         # 完整检查
 - `css/tailwind-custom.css` - Tailwind 自定义
 
 ### 后端 (src-tauri/src/)
-- `main.rs` - 唯一的 Rust 源文件，约 500 行，包含所有 Tauri commands：
+- `main.rs` - 唯一的 Rust 源文件，包含所有 Tauri commands：
   - `process_upx` - 执行压缩/解压
   - `scan_folder` - 递归扫描 exe/dll 文件
   - `get_upx_version` - 获取 UPX 版本
   - `refresh_icon_cache` - 刷新 Windows 图标缓存
+  - `check_update` - 检查 GitHub 最新版本
   - `save_config` / `load_config` - 配置持久化
 
 ## 重要细节

@@ -5,82 +5,92 @@ const { listen } = window.__TAURI__.event
 
 const appWindow = getCurrentWindow()
 
+// DOM 辅助函数
+const $ = (id) => document.getElementById(id)
+
 const PERFORMANCE_CONFIG = {
     cpuCores: navigator.hardwareConcurrency || 4,
-    batchSize: null,
+    batchSize: Math.max(2, Math.min((navigator.hardwareConcurrency || 4) * 2, 16)),
 }
 
-function calculateOptimalBatchSize() {
-    const optimal = Math.max(2, Math.min(PERFORMANCE_CONFIG.cpuCores * 2, 16))
-    PERFORMANCE_CONFIG.batchSize = optimal
-    return optimal
+// DOM 元素（延迟初始化）
+let compressBtn,
+    decompressBtn,
+    compressionLevel,
+    levelDisplay,
+    levelDescription,
+    overwriteCheckbox,
+    backupCheckbox,
+    ultraBruteCheckbox,
+    includeSubfoldersCheckbox,
+    forceCompressCheckbox,
+    logOutput,
+    settingsModal,
+    settingsBtn,
+    closeSettingsBtn,
+    refreshIconBtn,
+    checkUpdateBtn,
+    appTitle,
+    minimizeBtn,
+    maximizeBtn,
+    closeBtn
+
+// 初始化 DOM 元素
+function initDOMElements() {
+    compressBtn = $('compress-btn')
+    decompressBtn = $('decompress-btn')
+    compressionLevel = $('compression-level')
+    levelDisplay = $('level-display')
+    levelDescription = $('level-description')
+    overwriteCheckbox = $('overwrite')
+    backupCheckbox = $('backup')
+    ultraBruteCheckbox = $('ultra-brute')
+    includeSubfoldersCheckbox = $('include-subfolders')
+    forceCompressCheckbox = $('force-compress')
+    logOutput = $('log-output')
+    settingsModal = $('settings-modal')
+    settingsBtn = $('settings-btn')
+    closeSettingsBtn = $('close-settings')
+    refreshIconBtn = $('refresh-icon-btn')
+    checkUpdateBtn = $('check-update-btn')
+    appTitle = $('app-title')
+    minimizeBtn = $('titlebar-minimize')
+    maximizeBtn = $('titlebar-maximize')
+    closeBtn = $('titlebar-close')
 }
-
-// DOM 元素
-const compressBtn = document.getElementById('compress-btn')
-const decompressBtn = document.getElementById('decompress-btn')
-const compressionLevel = document.getElementById('compression-level')
-const levelDisplay = document.getElementById('level-display')
-const levelDescription = document.getElementById('level-description')
-const overwriteCheckbox = document.getElementById('overwrite')
-const backupCheckbox = document.getElementById('backup')
-const ultraBruteCheckbox = document.getElementById('ultra-brute')
-const includeSubfoldersCheckbox = document.getElementById('include-subfolders')
-const forceCompressCheckbox = document.getElementById('force-compress')
-const logOutput = document.getElementById('log-output')
-const settingsModal = document.getElementById('settings-modal')
-const settingsBtn = document.getElementById('settings-btn')
-const closeSettingsBtn = document.getElementById('close-settings')
-const refreshIconBtn = document.getElementById('refresh-icon-btn')
-const appTitle = document.getElementById('app-title')
-
-// 窗口控制按钮
-const minimizeBtn = document.getElementById('titlebar-minimize')
-const maximizeBtn = document.getElementById('titlebar-maximize')
-const closeBtn = document.getElementById('titlebar-close')
 
 // 初始化
 document.addEventListener('DOMContentLoaded', async () => {
-    // 初始化性能配置
-    calculateOptimalBatchSize()
-
+    initDOMElements()
+    initUpdateModal()
     initWindowControls()
     initOperationButtons()
     initCompressionLevelSlider()
     initTitleClick()
     preventRefresh()
     await setupDragAndDrop()
-
-    // 加载保存的配置
     await loadSavedConfig()
 
-    // 获取并显示UPX版本
+    // 获取并显示 UPX 版本
     try {
         const version = await invoke('get_upx_version')
-        // 在标题栏显示版本
-        const versionElement = document.getElementById('upx-version')
-        if (versionElement) {
-            versionElement.textContent = `- ${version}`
-        }
+        const versionElement = $('upx-version')
+        if (versionElement) versionElement.textContent = `- ${version}`
         addLog(`UPX GUI 已就绪 - ${version}`, 'info')
-    } catch (error) {
+    } catch {
         addLog('UPX GUI 已就绪 - 请选择操作', 'info')
     }
 
-    // 页面加载完成后显示窗口，避免白屏
-    setTimeout(async () => {
-        await appWindow.show()
-    }, 100)
+    // 页面加载完成后显示窗口
+    setTimeout(() => appWindow.show(), 100)
 
-    // 监听窗口大小变化，更新按钮位置缓存（使用防抖优化）
+    // 监听窗口大小变化，清除按钮位置缓存
     let resizeTimer
     window.addEventListener(
         'resize',
         () => {
             clearTimeout(resizeTimer)
-            resizeTimer = setTimeout(() => {
-                cachedButtonRects = null // 清除缓存，下次使用时重新计算
-            }, 150)
+            resizeTimer = setTimeout(() => (cachedButtonRects = null), 150)
         },
         { passive: true }
     )
@@ -114,17 +124,9 @@ function preventRefresh() {
 
 // 窗口控制
 function initWindowControls() {
-    minimizeBtn.addEventListener('click', () => {
-        appWindow.minimize()
-    })
-
-    maximizeBtn.addEventListener('click', () => {
-        appWindow.toggleMaximize()
-    })
-
-    closeBtn.addEventListener('click', () => {
-        appWindow.close()
-    })
+    minimizeBtn.addEventListener('click', () => appWindow.minimize())
+    maximizeBtn.addEventListener('click', () => appWindow.toggleMaximize())
+    closeBtn.addEventListener('click', () => appWindow.close())
 }
 
 // 标题点击事件
@@ -146,6 +148,7 @@ function initTitleClick() {
 
 function initOperationButtons() {
     refreshIconBtn.addEventListener('click', handleRefreshIcon)
+    checkUpdateBtn.addEventListener('click', handleCheckUpdate)
     settingsBtn.addEventListener('click', showSettingsModal)
     closeSettingsBtn.addEventListener('click', handleCloseSettings)
     settingsModal.addEventListener('click', handleModalBackdropClick)
@@ -170,7 +173,6 @@ async function handleModalBackdropClick(e) {
 async function handleOperationClick(mode) {
     const modeName = mode === 'compress' ? '加壳压缩' : '脱壳解压'
     const processFile = mode === 'compress' ? handleCompressWithFile : handleDecompressWithFile
-    const selectFile = mode === 'compress' ? handleCompress : handleDecompress
 
     if (window.droppedFiles?.length > 0) {
         const files = window.droppedFiles
@@ -183,8 +185,8 @@ async function handleOperationClick(mode) {
         addLog(`开始${modeName}...`, 'info')
         await processFile(filePath)
     } else {
-        addLog(`选择文件进行${modeName === '加壳压缩' ? '加壳' : '脱壳'}...`, 'info')
-        await selectFile()
+        addLog(`选择文件进行${mode === 'compress' ? '加壳' : '脱壳'}...`, 'info')
+        await handleFileSelect(mode)
     }
 }
 
@@ -221,24 +223,22 @@ function getCompressionLevel() {
     return value === 10 ? 'best' : value.toString()
 }
 
-// 显示设置弹窗
-function showSettingsModal() {
-    settingsModal.classList.remove('hidden')
-    // 强制重排以触发动画
-    void settingsModal.offsetHeight
-    settingsModal.classList.add('show')
+// 通用弹窗控制
+function showModal(modal) {
+    modal.classList.remove('hidden')
+    void modal.offsetHeight // 强制重排以触发动画
+    modal.classList.add('show')
 }
 
-// 隐藏设置弹窗
-function hideSettingsModal() {
-    settingsModal.classList.remove('show')
-    // 等待动画结束后再隐藏
+function hideModal(modal) {
+    modal.classList.remove('show')
     setTimeout(() => {
-        if (!settingsModal.classList.contains('show')) {
-            settingsModal.classList.add('hidden')
-        }
+        if (!modal.classList.contains('show')) modal.classList.add('hidden')
     }, 250)
 }
+
+const showSettingsModal = () => showModal(settingsModal)
+const hideSettingsModal = () => hideModal(settingsModal)
 
 // 扫描文件夹获取所有exe和dll文件
 async function scanFolder(folderPath, includeSubfolders) {
@@ -322,46 +322,35 @@ async function setupDragAndDrop() {
 }
 
 function handleDragEnter(event) {
-    const { position } = event.payload
-    updateDragVisual(position)
+    updateDragVisual(event.payload.position)
 }
 
 function handleDragOver(event) {
-    const { position } = event.payload
-    updateDragVisual(position)
+    updateDragVisual(event.payload.position)
 }
 
 function handleDragLeave() {
+    clearDragVisual()
+}
+
+function clearDragVisual() {
     compressBtn.classList.remove('drag-over')
     decompressBtn.classList.remove('drag-over')
 }
 
 function updateDragVisual(position) {
     const dropTarget = getDropTarget(position)
-
-    if (dropTarget === 'compress') {
-        compressBtn.classList.add('drag-over')
-        decompressBtn.classList.remove('drag-over')
-    } else if (dropTarget === 'decompress') {
-        decompressBtn.classList.add('drag-over')
-        compressBtn.classList.remove('drag-over')
-    } else {
-        compressBtn.classList.remove('drag-over')
-        decompressBtn.classList.remove('drag-over')
-    }
+    compressBtn.classList.toggle('drag-over', dropTarget === 'compress')
+    decompressBtn.classList.toggle('drag-over', dropTarget === 'decompress')
 }
 
 async function handleDragDrop(event) {
     const { paths, position } = event.payload
-
-    // 移除拖拽视觉效果
-    compressBtn.classList.remove('drag-over')
-    decompressBtn.classList.remove('drag-over')
+    clearDragVisual()
 
     if (!paths?.length) return
 
     const allFiles = await collectFiles(paths)
-
     if (allFiles.length === 0) {
         addLog('未找到 .exe 或 .dll 文件', 'warning')
         return
@@ -436,14 +425,6 @@ function getDropTarget(position) {
     }
 
     return null
-}
-
-async function handleCompress() {
-    await handleFileSelect('compress')
-}
-
-async function handleDecompress() {
-    await handleFileSelect('decompress')
 }
 
 async function handleFileSelect(mode) {
@@ -592,6 +573,217 @@ async function handleRefreshIcon() {
         addLog('图标缓存刷新完成', 'success')
     } catch (error) {
         addLog(`刷新失败: ${error}`, 'error')
+    }
+}
+
+// 更新弹窗相关元素（延迟初始化）
+let updateModal,
+    updateVersion,
+    updateDate,
+    updateNotes,
+    updateProgress,
+    updateProgressText,
+    updateProgressBar,
+    updateLaterBtn,
+    updateNowBtn
+
+// 当前更新信息缓存
+let currentUpdateInfo = null
+
+// 初始化更新弹窗元素和事件
+function initUpdateModal() {
+    updateModal = $('update-modal')
+    updateVersion = $('update-version')
+    updateDate = $('update-date')
+    updateNotes = $('update-notes')
+    updateProgress = $('update-progress')
+    updateProgressText = $('update-progress-text')
+    updateProgressBar = $('update-progress-bar')
+    updateLaterBtn = $('update-later-btn')
+    updateNowBtn = $('update-now-btn')
+
+    updateLaterBtn?.addEventListener('click', hideUpdateModal)
+    updateNowBtn?.addEventListener('click', handleDownloadUpdate)
+    updateModal?.addEventListener('click', (e) => {
+        if (e.target === updateModal) hideUpdateModal()
+    })
+}
+
+// 检查更新
+async function handleCheckUpdate() {
+    try {
+        addLog('正在检查更新...', 'info')
+        checkUpdateBtn.disabled = true
+
+        const updateInfo = await invoke('check_update')
+
+        if (updateInfo.has_update) {
+            addLog(`发现新版本: ${updateInfo.latest_version}`, 'success', true)
+            currentUpdateInfo = updateInfo
+            showUpdateModal(updateInfo)
+        } else {
+            addLog(`当前已是最新版本 (${updateInfo.current_version})`, 'success')
+        }
+    } catch (error) {
+        addLog(`检查更新失败: ${error}`, 'error')
+    } finally {
+        checkUpdateBtn.disabled = false
+    }
+}
+
+// 简单的 Markdown 渲染
+function renderMarkdown(text) {
+    if (!text) return '<div>暂无更新说明</div>'
+
+    // 移除图片和 HTML 标签
+    let cleaned = text
+        .replace(/!\[.*?\]\(.*?\)/g, '')
+        .replace(/<img[^>]*>/g, '')
+        .replace(/<[^>]+>/g, '')
+        .trim()
+
+    // 按行处理
+    const lines = cleaned.split('\n')
+    const result = []
+
+    for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed) continue
+
+        // 列表项
+        if (/^[-*]\s+/.test(trimmed)) {
+            const content = trimmed.replace(/^[-*]\s+/, '')
+            result.push(
+                `<div class="flex gap-2"><span>•</span><span>${formatInline(content)}</span></div>`
+            )
+        }
+        // 标题
+        else if (/^###\s+/.test(trimmed)) {
+            result.push(
+                `<div class="font-medium text-foreground">${trimmed.replace(/^###\s+/, '')}</div>`
+            )
+        } else if (/^##\s+/.test(trimmed)) {
+            result.push(
+                `<div class="font-semibold text-foreground">${trimmed.replace(/^##\s+/, '')}</div>`
+            )
+        } else if (/^#\s+/.test(trimmed)) {
+            result.push(
+                `<div class="font-bold text-foreground">${trimmed.replace(/^#\s+/, '')}</div>`
+            )
+        }
+        // 普通文本
+        else {
+            result.push(`<div>${formatInline(trimmed)}</div>`)
+        }
+    }
+
+    return result.length > 0 ? result.join('') : '<div>暂无更新说明</div>'
+}
+
+// 处理行内格式
+function formatInline(text) {
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-secondary/50 px-1 rounded text-xs">$1</code>')
+        .replace(
+            /\[([^\]]+)\]\(([^)]+)\)/g,
+            '<a href="$2" class="text-primary hover:underline" target="_blank">$1</a>'
+        )
+}
+
+// 显示更新弹窗
+function showUpdateModal(info) {
+    updateVersion.textContent = `${info.current_version} → ${info.latest_version}`
+    updateDate.textContent = `发布于 ${formatDate(info.published_at)}`
+    updateNotes.innerHTML = renderMarkdown(info.release_notes)
+
+    // 重置进度条和按钮状态
+    updateProgress.classList.add('hidden')
+    updateProgressBar.style.width = '0%'
+    updateProgressText.textContent = '0%'
+    updateNowBtn.disabled = false
+    updateNowBtn.textContent = info.download_url ? '立即更新' : '前往下载'
+    updateLaterBtn.disabled = false
+
+    showModal(updateModal)
+}
+
+const hideUpdateModal = () => hideModal(updateModal)
+
+// 下载并安装更新
+async function handleDownloadUpdate() {
+    if (!currentUpdateInfo) return
+
+    // 如果没有直接下载链接，打开浏览器
+    if (!currentUpdateInfo.download_url) {
+        try {
+            const { open } = window.__TAURI__.shell
+            await open(currentUpdateInfo.release_url)
+            addLog('已在浏览器中打开下载页面', 'success')
+            hideUpdateModal()
+        } catch (e) {
+            addLog(`打开链接失败: ${e}`, 'error')
+        }
+        return
+    }
+
+    try {
+        updateNowBtn.disabled = true
+        updateLaterBtn.disabled = true
+        updateNowBtn.textContent = '下载中...'
+        updateProgress.classList.remove('hidden')
+
+        // 模拟进度（因为无法获取真实进度）
+        let progress = 0
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15
+            if (progress > 90) progress = 90
+            updateProgressBar.style.width = `${progress}%`
+            updateProgressText.textContent = `${Math.round(progress)}%`
+        }, 200)
+
+        // 从 URL 提取文件名
+        const filename = currentUpdateInfo.download_url.split('/').pop() || 'UPX-Tools-setup.exe'
+
+        addLog(`正在下载: ${filename}`, 'info')
+        const filePath = await invoke('download_and_install', {
+            url: currentUpdateInfo.download_url,
+            filename: filename,
+        })
+
+        clearInterval(progressInterval)
+        updateProgressBar.style.width = '100%'
+        updateProgressText.textContent = '100%'
+
+        addLog(`下载完成: ${filePath}`, 'success')
+        addLog('正在启动安装程序...', 'info')
+
+        // 短暂延迟后关闭弹窗
+        setTimeout(() => {
+            hideUpdateModal()
+            addLog('安装程序已启动，请按提示完成安装', 'success', true)
+        }, 1000)
+    } catch (error) {
+        addLog(`下载失败: ${error}`, 'error')
+        updateNowBtn.disabled = false
+        updateLaterBtn.disabled = false
+        updateNowBtn.textContent = '重试'
+    }
+}
+
+// 格式化日期
+function formatDate(isoString) {
+    try {
+        const date = new Date(isoString)
+        return date.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        })
+    } catch {
+        return isoString
     }
 }
 

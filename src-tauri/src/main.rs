@@ -4,14 +4,22 @@
 use encoding_rs::GBK;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::OnceLock;
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+// 嵌入 UPX 可执行文件（便携版支持）
+const EMBEDDED_UPX: &[u8] = include_bytes!("../../upx/upx.exe");
+
+// 缓存已释放的 UPX 路径
+static EXTRACTED_UPX_PATH: OnceLock<Option<PathBuf>> = OnceLock::new();
 
 // ============================================================================
 // 数据结构定义
@@ -69,7 +77,7 @@ fn get_config_path() -> Option<PathBuf> {
 }
 
 fn get_upx_path() -> Option<PathBuf> {
-    // 打包后的位置
+    // 1. 打包后的位置（安装版）
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
             let upx = exe_dir.join("_up_/upx/upx.exe");
@@ -79,9 +87,46 @@ fn get_upx_path() -> Option<PathBuf> {
         }
     }
 
-    // 开发环境
+    // 2. 开发环境
     let dev_upx = PathBuf::from("../upx/upx.exe");
-    dev_upx.exists().then_some(dev_upx)
+    if dev_upx.exists() {
+        return Some(dev_upx);
+    }
+
+    // 3. 便携版：从嵌入资源释放到临时目录
+    extract_embedded_upx()
+}
+
+/// 从嵌入的二进制数据释放 UPX 到临时目录
+fn extract_embedded_upx() -> Option<PathBuf> {
+    // 使用 OnceLock 确保只释放一次
+    EXTRACTED_UPX_PATH
+        .get_or_init(|| {
+            let temp_dir = std::env::temp_dir().join("upx-gui-portable");
+
+            // 创建临时目录
+            if fs::create_dir_all(&temp_dir).is_err() {
+                return None;
+            }
+
+            let upx_path = temp_dir.join("upx.exe");
+
+            // 如果文件已存在且大小匹配，直接使用
+            if upx_path.exists() {
+                if let Ok(metadata) = fs::metadata(&upx_path) {
+                    if metadata.len() == EMBEDDED_UPX.len() as u64 {
+                        return Some(upx_path);
+                    }
+                }
+            }
+
+            // 写入嵌入的 UPX 文件
+            let mut file = fs::File::create(&upx_path).ok()?;
+            file.write_all(EMBEDDED_UPX).ok()?;
+
+            Some(upx_path)
+        })
+        .clone()
 }
 
 // ============================================================================
@@ -469,6 +514,177 @@ async fn refresh_icon_cache() -> Result<(), String> {
 }
 
 // ============================================================================
+// 检查更新
+// ============================================================================
+
+const GITHUB_REPO: &str = "Y-ASLant/UPX-Tools";
+const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
+fn create_http_client() -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .user_agent("UPX-Tools/1.0")
+        .build()
+        .map_err(|e| format!("创建 HTTP 客户端失败: {}", e))
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct GitHubRelease {
+    tag_name: String,
+    html_url: String,
+    name: String,
+    body: Option<String>,
+    published_at: String,
+    assets: Vec<GitHubAsset>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct GitHubAsset {
+    name: String,
+    browser_download_url: String,
+    size: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct UpdateInfo {
+    has_update: bool,
+    current_version: String,
+    latest_version: String,
+    release_url: String,
+    release_name: String,
+    release_notes: String,
+    published_at: String,
+    download_url: Option<String>,
+    download_size: Option<u64>,
+}
+
+#[tauri::command]
+async fn check_update() -> Result<UpdateInfo, String> {
+    let url = format!(
+        "https://api.github.com/repos/{}/releases/latest",
+        GITHUB_REPO
+    );
+
+    let client = create_http_client()?;
+
+    // 构建请求
+    let mut request = client
+        .get(&url)
+        .header("Accept", "application/vnd.github+json")
+        .header("X-GitHub-Api-Version", "2022-11-28");
+
+    // 从环境变量读取 GitHub Token（如果存在，可提高 API 速率限制）
+    if let Ok(token) = std::env::var("GITHUB_TOKEN") {
+        if !token.is_empty() {
+            request = request.header("Authorization", format!("Bearer {}", token));
+        }
+    }
+
+    let response = request
+        .send()
+        .await
+        .map_err(|e| format!("网络请求失败: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!("GitHub API 请求失败: {}", response.status()));
+    }
+
+    let release: GitHubRelease = response
+        .json()
+        .await
+        .map_err(|e| format!("解析响应失败: {}", e))?;
+
+    // 移除版本号前的 'v' 前缀进行比较
+    let latest = release.tag_name.trim_start_matches('v');
+    let current = CURRENT_VERSION.trim_start_matches('v');
+
+    let has_update = version_compare(latest, current);
+
+    // 查找便携版或安装包下载链接
+    let (download_url, download_size) = release
+        .assets
+        .iter()
+        .find(|a| a.name.ends_with("-portable.exe") || a.name.ends_with("-setup.exe"))
+        .map(|a| (Some(a.browser_download_url.clone()), Some(a.size)))
+        .unwrap_or((None, None));
+
+    Ok(UpdateInfo {
+        has_update,
+        current_version: format!("v{}", CURRENT_VERSION),
+        latest_version: release.tag_name.clone(),
+        release_url: release.html_url,
+        release_name: release.name,
+        release_notes: release.body.unwrap_or_default(),
+        published_at: release.published_at,
+        download_url,
+        download_size,
+    })
+}
+
+#[tauri::command]
+async fn download_and_install(url: String, filename: String) -> Result<String, String> {
+    let client = create_http_client()?;
+
+    // 下载文件
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| format!("下载失败: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!("下载失败: HTTP {}", response.status()));
+    }
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("读取下载内容失败: {}", e))?;
+
+    // 保存到临时目录
+    let temp_dir = std::env::temp_dir().join("upx-tools-update");
+    fs::create_dir_all(&temp_dir).map_err(|e| format!("创建临时目录失败: {}", e))?;
+
+    let file_path = temp_dir.join(&filename);
+    fs::write(&file_path, &bytes).map_err(|e| format!("保存文件失败: {}", e))?;
+
+    // 运行安装程序
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("cmd")
+            .args(["/C", "start", "", file_path.to_str().unwrap_or_default()])
+            .creation_flags(CREATE_NO_WINDOW)
+            .spawn()
+            .map_err(|e| format!("启动安装程序失败: {}", e))?;
+    }
+
+    Ok(file_path.to_string_lossy().to_string())
+}
+
+/// 比较版本号，返回 latest > current
+fn version_compare(latest: &str, current: &str) -> bool {
+    let parse_version = |v: &str| -> Vec<u32> {
+        v.split('.')
+            .filter_map(|s| s.parse().ok())
+            .collect()
+    };
+
+    let latest_parts = parse_version(latest);
+    let current_parts = parse_version(current);
+
+    for i in 0..latest_parts.len().max(current_parts.len()) {
+        let l = latest_parts.get(i).copied().unwrap_or(0);
+        let c = current_parts.get(i).copied().unwrap_or(0);
+        if l > c {
+            return true;
+        }
+        if l < c {
+            return false;
+        }
+    }
+    false
+}
+
+// ============================================================================
 // 配置持久化
 // ============================================================================
 
@@ -507,7 +723,9 @@ fn main() {
             get_upx_version,
             refresh_icon_cache,
             save_config,
-            load_config
+            load_config,
+            check_update,
+            download_and_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

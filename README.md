@@ -7,14 +7,26 @@
 ### 主界面
 ![主界面](img/index.png)
 
+### 加壳压缩
+![加壳压缩](img/pack.png)
+
+### 脱壳解压
+![脱壳解压](img/unpack.png)
+
 ### 设置界面
 ![设置界面](img/setting.png)
+
+### 检查更新
+| 已是最新版本 | 发现新版本 |
+|:---:|:---:|
+| ![无更新](img/check_update_noupdate.png) | ![有更新](img/check_update_update.png) |
 
 
 ## 功能特性
 
-- 界面美观：基于现代化 UI 设计，简洁直观的操作界面
+- 界面美观：基于 shadcn/ui 设计风格，简洁直观的操作界面
 - 体积轻量：应用程序体积小，启动速度快，资源占用低
+- 便携版本：支持单文件便携版，无需安装即可运行
 - 文件压缩：支持对 EXE 和 DLL 文件进行压缩加壳
 - 文件解压：支持对已压缩的文件进行解压脱壳
 - 批量处理：支持选择文件夹批量处理多个文件
@@ -24,13 +36,21 @@
 - 文件备份：可选择在处理前自动备份原文件
 - 递归处理：支持包含子文件夹的批量处理
 - 图标刷新：内置 Windows 图标缓存清理功能
+- 检查更新：一键检查 GitHub 最新版本
 - 实时日志：显示详细的处理过程和结果信息
 
 ## 技术栈
 
-- 前端：HTML + TailwindCSS + JavaScript
-- 后端：Rust + Tauri
+- 前端：HTML + TailwindCSS + JavaScript（shadcn/ui 设计风格）
+- 后端：Rust + Tauri 2.0
 - 核心：UPX 可执行文件
+
+## 下载安装
+
+前往 [Releases](https://github.com/YuSanllworking/UPX-GUI/releases) 页面下载最新版本：
+
+- **便携版**：下载 `*-portable.exe`，双击即可运行，无需安装
+- **安装版**：下载 `*.msi` 或 `*-setup.exe`，运行安装程序
 
 ## 使用说明
 
@@ -60,6 +80,12 @@
 - 强制压缩：强制处理受保护的文件，如带 GUARD_CF 的程序
 
 **配置自动保存**：所有设置会在关闭设置面板时自动保存，下次启动应用时会自动加载上次的配置。配置文件保存在应用程序目录下的 `upx_gui_config.json` 文件中。
+
+### 检查更新
+
+点击右上角下载图标按钮，可检查 GitHub 仓库是否有新版本发布，如果有新版本会自动打开下载页面。
+
+> **提示**：如果频繁检查更新遇到 API 限制，可设置环境变量 `GITHUB_TOKEN` 提高请求配额。
 
 ### 刷新图标缓存
 
@@ -145,26 +171,42 @@ cargo tauri dev
 ### 生成发行版本
 
 ```bash
-# 编译发行版（生成安装包）
-cargo tauri build
+# 完整编译（推荐，包含便携版）
+npm run build
 
-# 编译后的文件位于
-# src-tauri/target/release/bundle/
+# 或仅编译安装包
+cargo tauri build
 ```
 
-### 安装包类型
+### 编译产物
 
-编译完成后会生成两种安装包：
+编译完成后的文件位于 `src-tauri/target/release/bundle/`：
 
-- MSI 安装包：传统 Windows Installer 格式
-- NSIS 安装包：现代化安装程序，支持自定义选项
+```
+bundle/
+├── Portable/
+│   └── UPX-Tools.exe      # 便携版（单文件，内嵌 UPX）
+├── msi/
+│   └── *.msi              # MSI 安装包
+└── nsis/
+    └── *.exe              # NSIS 安装包
+```
+
+### 版本说明
+
+| 版本类型 | 说明 |
+|---------|------|
+| 便携版 | 单个 EXE 文件，内嵌 UPX，无需安装，运行时自动释放到临时目录 |
+| MSI 安装包 | 传统 Windows Installer 格式，支持静默安装 |
+| NSIS 安装包 | 现代化安装程序，支持自定义安装选项 |
 
 ### 注意事项
 
 1. 首次编译需要下载依赖，时间较长
 2. 确保 upx 目录下存在 upx.exe 文件
-3. 编译后的程序会自动打包 upx.exe 到安装包中
-4. 发行版默认开启编译器优化，体积更小速度更快
+3. 便携版会将 upx.exe 内嵌到程序中，运行时自动释放
+4. 安装版会将 upx.exe 打包到安装目录
+5. 发行版默认开启编译器优化，体积更小速度更快
 
 ## 相关链接
 

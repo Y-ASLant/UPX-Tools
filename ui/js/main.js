@@ -21,6 +21,7 @@ let compressBtn,
     levelDescription,
     overwriteCheckbox,
     backupCheckbox,
+    lzmaCheckbox,
     ultraBruteCheckbox,
     includeSubfoldersCheckbox,
     forceCompressCheckbox,
@@ -45,6 +46,7 @@ function initDOMElements() {
     levelDescription = $('level-description')
     overwriteCheckbox = $('overwrite')
     backupCheckbox = $('backup')
+    lzmaCheckbox = $('lzma')
     ultraBruteCheckbox = $('ultra-brute')
     includeSubfoldersCheckbox = $('include-subfolders')
     forceCompressCheckbox = $('force-compress')
@@ -505,8 +507,13 @@ async function processUpx(mode, inputFile, outputFile) {
             output_file: outputFile,
             compression_level: getCompressionLevel(),
             backup: backupCheckbox.checked,
+            lzma: lzmaCheckbox.checked,
             ultra_brute: ultraBruteCheckbox.checked,
             force: forceCompressCheckbox.checked,
+        }
+
+        if (lzmaCheckbox.checked) {
+            addLog('已启用 LZMA 压缩', 'info')
         }
 
         if (ultraBruteCheckbox.checked) {
@@ -849,6 +856,7 @@ async function saveCurrentConfig() {
             compression_level: parseInt(compressionLevel.value),
             overwrite: overwriteCheckbox.checked,
             backup: backupCheckbox.checked,
+            lzma: lzmaCheckbox.checked,
             ultra_brute: ultraBruteCheckbox.checked,
             include_subfolders: includeSubfoldersCheckbox.checked,
             force_compress: forceCompressCheckbox.checked,
@@ -864,6 +872,7 @@ function applyConfigToUI(config) {
     compressionLevel.value = config.compression_level
     overwriteCheckbox.checked = config.overwrite
     backupCheckbox.checked = config.backup
+    lzmaCheckbox.checked = config.lzma || false
     ultraBruteCheckbox.checked = config.ultra_brute
     includeSubfoldersCheckbox.checked = config.include_subfolders
     forceCompressCheckbox.checked = config.force_compress

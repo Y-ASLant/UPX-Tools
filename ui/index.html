@@ -312,7 +312,7 @@
                                     极限压缩
                                 </span>
                                 <p class="text-xs text-muted-foreground mt-0.5">
-                                    尝试所有压缩方法，速度较慢但压缩率最高
+                                    尝试所有压缩方法，速度慢但压缩率最高
                                 </p>
                             </div>
                         </label>
@@ -336,7 +336,7 @@
                         </label>
 
                         <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md col-span-2"
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
                         >
                             <input
                                 type="checkbox"
@@ -348,7 +348,25 @@
                                     强制压缩
                                 </span>
                                 <p class="text-xs text-muted-foreground mt-0.5">
-                                    强制处理受保护的文件（如 GUARD_CF），可能移除安全特性
+                                    强制处理受保护的文件
+                                </p>
+                            </div>
+                        </label>
+
+                        <label
+                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
+                        >
+                            <input
+                                type="checkbox"
+                                id="lzma"
+                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
+                            />
+                            <div class="flex-1 min-w-0">
+                                <span class="text-sm font-medium text-foreground block">
+                                    LZMA 压缩
+                                </span>
+                                <p class="text-xs text-muted-foreground mt-0.5">
+                                    压缩率更高但速度稍慢
                                 </p>
                             </div>
                         </label>

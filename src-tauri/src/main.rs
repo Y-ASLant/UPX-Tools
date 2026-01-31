@@ -32,6 +32,7 @@ struct UpxOptions {
     output_file: String,
     compression_level: String,
     backup: bool,
+    lzma: bool,
     ultra_brute: bool,
     force: bool,
 }
@@ -47,6 +48,7 @@ struct AppConfig {
     compression_level: i32,
     overwrite: bool,
     backup: bool,
+    lzma: bool,
     ultra_brute: bool,
     include_subfolders: bool,
     force_compress: bool,
@@ -58,6 +60,7 @@ impl Default for AppConfig {
             compression_level: 9,
             overwrite: true,
             backup: false,
+            lzma: false,
             ultra_brute: false,
             include_subfolders: false,
             force_compress: false,
@@ -149,11 +152,15 @@ fn build_compress_args(
     // 压缩级别
     if options.ultra_brute {
         args.push("--ultra-brute".to_string());
-        args.push("--no-lzma".to_string());
     } else if options.compression_level == "best" {
         args.push("--best".to_string());
     } else {
         args.push(format!("-{}", options.compression_level));
+    }
+
+    // LZMA 压缩
+    if options.lzma {
+        args.push("--lzma".to_string());
     }
 
     // 强制压缩

@@ -559,8 +559,7 @@ struct UpdateInfo {
     release_name: String,
     release_notes: String,
     published_at: String,
-    download_url: Option<String>,
-    download_size: Option<u64>,
+    assets: Vec<GitHubAsset>,
 }
 
 #[tauri::command]
@@ -605,13 +604,17 @@ async fn check_update() -> Result<UpdateInfo, String> {
 
     let has_update = version_compare(latest, current);
 
-    // 查找便携版或安装包下载链接
-    let (download_url, download_size) = release
+    // 过滤出 Windows 相关的下载资源
+    let assets: Vec<GitHubAsset> = release
         .assets
         .iter()
-        .find(|a| a.name.ends_with("-portable.exe") || a.name.ends_with("-setup.exe"))
-        .map(|a| (Some(a.browser_download_url.clone()), Some(a.size)))
-        .unwrap_or((None, None));
+        .filter(|a| {
+            a.name.ends_with("-portable.exe")
+                || a.name.ends_with("-setup.exe")
+                || a.name.ends_with(".msi")
+        })
+        .cloned()
+        .collect();
 
     Ok(UpdateInfo {
         has_update,
@@ -621,8 +624,7 @@ async fn check_update() -> Result<UpdateInfo, String> {
         release_name: release.name,
         release_notes: release.body.unwrap_or_default(),
         published_at: release.published_at,
-        download_url,
-        download_size,
+        assets,
     })
 }
 

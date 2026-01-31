@@ -390,7 +390,7 @@
             class="hidden fixed inset-0 bg-foreground/80 flex items-center justify-center z-50 backdrop-blur-sm modal-backdrop"
         >
             <div class="card p-6 w-full mx-4 modal-content" style="max-width: 480px">
-                <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center gap-3 mb-5">
                     <div
                         class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center"
                     >
@@ -414,15 +414,23 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center justify-between mb-3">
                     <h3 class="text-sm font-medium text-foreground">更新内容</h3>
                     <span id="update-date" class="text-xs text-muted-foreground"></span>
                 </div>
-                <div class="bg-muted p-4 rounded-md max-h-32 overflow-y-auto">
+                <div class="bg-muted p-4 rounded-md max-h-32 overflow-y-auto mb-5">
                     <div id="update-notes" class="text-sm text-muted-foreground space-y-1"></div>
                 </div>
 
-                <div id="update-progress" class="hidden mt-6">
+                <!-- 下载选项 -->
+                <div class="space-y-3 mb-5">
+                    <h4 class="text-sm font-medium text-foreground">选择下载版本</h4>
+                    <div id="download-options" class="grid grid-cols-2 gap-4">
+                        <!-- 动态填充下载选项 -->
+                    </div>
+                </div>
+
+                <div id="update-progress" class="hidden">
                     <div class="flex items-center gap-3">
                         <div class="flex-1 h-2 bg-border rounded-full overflow-hidden">
                             <div
@@ -437,18 +445,12 @@
                     </div>
                 </div>
 
-                <div class="flex gap-3 mt-6">
+                <div class="flex mt-6">
                     <button
                         id="update-later-btn"
-                        class="btn btn-ghost flex-1 py-2.5 px-6 text-sm rounded-sm"
+                        class="btn btn-outline w-full py-2.5 px-6 text-sm rounded-sm"
                     >
                         稍后更新
-                    </button>
-                    <button
-                        id="update-now-btn"
-                        class="btn btn-primary flex-1 py-2.5 px-6 text-sm rounded-sm"
-                    >
-                        立即更新
                     </button>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 {
     "name": "UPX-Tools",
-    "version": "1.3.0",
+    "version": "1.4.5",
     "type": "module",
     "description": "UPX 可视化加壳/脱壳工具",
     "scripts": {

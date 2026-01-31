@@ -25,7 +25,13 @@ export default [
             indent: ['error', 4],
             quotes: ['error', 'single', { avoidEscape: true }],
             semi: ['error', 'never'],
-            'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+            'no-unused-vars': [
+                'warn',
+                {
+                    argsIgnorePattern: '^_',
+                    varsIgnorePattern: '^currentUpdateInfo_$',
+                },
+            ],
             'no-constant-condition': ['warn', { checkLoops: false }],
             'no-console': 'off',
         },

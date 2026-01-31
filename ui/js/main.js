@@ -600,10 +600,10 @@ let updateModal,
     updateProgressText,
     updateProgressBar,
     updateLaterBtn,
-    updateNowBtn
+    downloadOptions
 
 // 当前更新信息缓存
-let currentUpdateInfo = null
+let currentUpdateInfo_ = null
 
 // 初始化更新弹窗元素和事件
 function initUpdateModal() {
@@ -615,10 +615,9 @@ function initUpdateModal() {
     updateProgressText = $('update-progress-text')
     updateProgressBar = $('update-progress-bar')
     updateLaterBtn = $('update-later-btn')
-    updateNowBtn = $('update-now-btn')
+    downloadOptions = $('download-options')
 
     updateLaterBtn?.addEventListener('click', hideUpdateModal)
-    updateNowBtn?.addEventListener('click', handleDownloadUpdate)
     updateModal?.addEventListener('click', (e) => {
         if (e.target === updateModal) hideUpdateModal()
     })
@@ -634,7 +633,7 @@ async function handleCheckUpdate() {
 
         if (updateInfo.has_update) {
             addLog(`发现新版本: ${updateInfo.latest_version}`, 'success', true)
-            currentUpdateInfo = updateInfo
+            currentUpdateInfo_ = updateInfo
             showUpdateModal(updateInfo)
         } else {
             addLog(`当前已是最新版本 (${updateInfo.current_version})`, 'success')
@@ -712,43 +711,70 @@ function showUpdateModal(info) {
     updateDate.textContent = `发布于 ${formatDate(info.published_at)}`
     updateNotes.innerHTML = renderMarkdown(info.release_notes)
 
-    // 重置进度条和按钮状态
+    // 重置进度条状态
     updateProgress.classList.add('hidden')
     updateProgressBar.style.width = '0%'
     updateProgressText.textContent = '0%'
-    updateNowBtn.disabled = false
-    updateNowBtn.textContent = info.download_url ? '立即更新' : '前往下载'
-    updateLaterBtn.disabled = false
+
+    // 渲染下载选项
+    renderDownloadOptions(info.assets)
 
     showModal(updateModal)
 }
 
-const hideUpdateModal = () => hideModal(updateModal)
+// 渲染下载选项
+function renderDownloadOptions(assets) {
+    if (!downloadOptions) return
 
-// 下载并安装更新
-async function handleDownloadUpdate() {
-    if (!currentUpdateInfo) return
-
-    // 如果没有直接下载链接，打开浏览器
-    if (!currentUpdateInfo.download_url) {
-        try {
-            const { open } = window.__TAURI__.shell
-            await open(currentUpdateInfo.release_url)
-            addLog('已在浏览器中打开下载页面', 'success')
-            hideUpdateModal()
-        } catch (e) {
-            addLog(`打开链接失败: ${e}`, 'error')
-        }
-        return
+    const optionLabels = {
+        'portable.exe': '便携版',
+        'setup.exe': '安装版',
     }
 
+    downloadOptions.innerHTML = assets
+        .filter((asset) => {
+            // 只显示便携版和安装版
+            return asset.name.includes('portable.exe') || asset.name.includes('setup.exe')
+        })
+        .map((asset) => {
+            const label =
+                Object.entries(optionLabels).find(([key]) => asset.name.includes(key))?.[1] ||
+                asset.name
+
+            return `
+                <button
+                    class="download-option-btn btn btn-outline py-2.5 px-4 text-sm rounded-sm"
+                    data-url="${asset.browser_download_url}"
+                    data-filename="${asset.name}"
+                >
+                    ${label}
+                </button>
+            `
+        })
+        .join('')
+
+    // 绑定点击事件
+    downloadOptions.querySelectorAll('.download-option-btn').forEach((btn) => {
+        btn.addEventListener('click', handleDownloadOption)
+    })
+}
+
+// 下载选中的版本
+async function handleDownloadOption(e) {
+    const url = e.target.dataset.url
+    const filename = e.target.dataset.filename
+
+    if (!url) return
+
     try {
-        updateNowBtn.disabled = true
-        updateLaterBtn.disabled = true
-        updateNowBtn.textContent = '下载中...'
+        // 禁用所有下载按钮
+        downloadOptions
+            .querySelectorAll('.download-option-btn')
+            .forEach((btn) => (btn.disabled = true))
+
         updateProgress.classList.remove('hidden')
 
-        // 模拟进度（因为无法获取真实进度）
+        // 模拟进度
         let progress = 0
         const progressInterval = setInterval(() => {
             progress += Math.random() * 15
@@ -757,13 +783,10 @@ async function handleDownloadUpdate() {
             updateProgressText.textContent = `${Math.round(progress)}%`
         }, 200)
 
-        // 从 URL 提取文件名
-        const filename = currentUpdateInfo.download_url.split('/').pop() || 'UPX-Tools-setup.exe'
-
         addLog(`正在下载: ${filename}`, 'info')
         const filePath = await invoke('download_and_install', {
-            url: currentUpdateInfo.download_url,
-            filename: filename,
+            url,
+            filename,
         })
 
         clearInterval(progressInterval)
@@ -773,18 +796,20 @@ async function handleDownloadUpdate() {
         addLog(`下载完成: ${filePath}`, 'success')
         addLog('正在启动安装程序...', 'info')
 
-        // 短暂延迟后关闭弹窗
         setTimeout(() => {
             hideUpdateModal()
             addLog('安装程序已启动，请按提示完成安装', 'success', true)
         }, 1000)
     } catch (error) {
         addLog(`下载失败: ${error}`, 'error')
-        updateNowBtn.disabled = false
-        updateLaterBtn.disabled = false
-        updateNowBtn.textContent = '重试'
+        // 恢复按钮状态
+        downloadOptions
+            .querySelectorAll('.download-option-btn')
+            .forEach((btn) => (btn.disabled = false))
     }
 }
+
+const hideUpdateModal = () => hideModal(updateModal)
 
 // 格式化日期
 function formatDate(isoString) {

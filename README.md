@@ -148,10 +148,11 @@ UPX-Tools/
 │   └── js/            # JavaScript 代码
 ├── src-tauri/         # Rust 后端
 │   ├── src/           # Rust 源码
+│   ├── Cargo.toml     # Rust 依赖配置
 │   └── tauri.conf.json # Tauri 配置
 ├── upx/               # UPX 工具
 │   └── upx.exe        # UPX 可执行文件
-├── .eslintrc.json     # ESLint 配置
+├── eslint.config.js   # ESLint v9 配置
 ├── .prettierrc.json   # Prettier 配置
 └── package.json       # npm 依赖配置
 ```

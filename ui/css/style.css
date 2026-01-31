@@ -99,52 +99,45 @@ body {
 
 /* 滚动条样式 */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 4px;
+    height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: var(--radius);
+    background: hsl(var(--border));
+    border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: hsl(var(--muted-foreground) / 0.3);
 }
 
 /* 日志输出区域 */
 #log-output {
     font-family: 'YASLant', 'Consolas', 'Monaco', 'Courier New', monospace;
-    overflow: overlay;
+    overflow: auto;
 }
 
 /* 日志输出区域滚动条 */
 #log-output::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 #log-output::-webkit-scrollbar-track {
     background: transparent;
-    border-radius: var(--radius);
 }
 
 #log-output::-webkit-scrollbar-thumb {
-    background: hsl(0 0% 40% / 0.4);
-    border-radius: var(--radius);
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 2px;
 }
 
 #log-output::-webkit-scrollbar-thumb:hover {
-    background: hsl(0 0% 50% / 0.6);
-}
-
-/* 日志高亮样式 */
-#log-output .log-highlight {
-    color: #ffffff;
-    font-weight: 500;
+    background: hsl(var(--muted-foreground) / 0.4);
 }
 
 /* 日志行样式 */
@@ -158,24 +151,24 @@ body {
 }
 
 .log-info {
-    color: #a1a1aa;
+    color: hsl(var(--muted-foreground));
 }
 
 .log-error {
-    color: #f87171;
+    color: hsl(var(--destructive));
 }
 
 .log-warning {
-    color: #fbbf24;
+    color: #f59e0b;
 }
 
 .log-success {
-    color: #4ade80;
+    color: hsl(var(--primary));
     font-weight: 500;
 }
 
 .log-hint {
-    color: #71717a;
+    color: hsl(var(--muted-foreground));
     padding-left: 16px;
 }
 
@@ -244,6 +237,12 @@ body {
 .btn-ghost:hover {
     background-color: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
+}
+
+/* 清空按钮 hover 特效 */
+#clear-log-btn:hover {
+    color: hsl(var(--destructive));
+    background-color: hsl(var(--destructive) / 0.1);
 }
 
 /* 卡片样式 */

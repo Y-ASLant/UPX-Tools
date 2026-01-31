@@ -135,9 +135,9 @@
         </div>
 
         <!-- 主内容区 -->
-        <div class="h-[calc(100vh-2.5rem)] flex flex-col p-5 gap-4">
+        <div class="h-[calc(100vh-2.5rem)] flex flex-col p-3 gap-3">
             <!-- 操作选择 -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-3">
                 <button
                     id="compress-btn"
                     class="drop-zone group relative py-6 px-5 bg-secondary/50 border border-border rounded-lg hover:border-primary hover:bg-accent transition-all cursor-pointer outline-none focus:outline-none"
@@ -189,13 +189,36 @@
             </div>
 
             <!-- 日志输出 -->
-            <div class="card p-5 flex-1 flex flex-col min-h-0">
-                <h2 class="text-sm font-semibold text-foreground mb-3">执行日志</h2>
+            <div class="flex-1 flex flex-col min-h-0">
+                <div class="card p-3 mb-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-sm font-medium text-foreground">执行日志：</h2>
+                        <button
+                            id="clear-log-btn"
+                            class="btn btn-ghost w-8 h-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title="清空日志"
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
                 <div
                     id="log-output"
-                    class="flex-1 bg-primary text-primary-foreground font-mono text-sm p-4 overflow-y-auto overflow-x-hidden rounded-md"
+                    class="flex-1 bg-muted text-muted-foreground font-mono text-sm p-3 overflow-y-auto overflow-x-hidden rounded-md"
                 >
-                    <div class="text-primary-foreground/50">等待操作...</div>
+                    <div class="text-muted-foreground/50">等待操作...</div>
                 </div>
             </div>
         </div>

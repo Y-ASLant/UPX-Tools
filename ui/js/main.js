@@ -25,6 +25,7 @@ let compressBtn,
     includeSubfoldersCheckbox,
     forceCompressCheckbox,
     logOutput,
+    clearLogBtn,
     settingsModal,
     settingsBtn,
     closeSettingsBtn,
@@ -48,6 +49,7 @@ function initDOMElements() {
     includeSubfoldersCheckbox = $('include-subfolders')
     forceCompressCheckbox = $('force-compress')
     logOutput = $('log-output')
+    clearLogBtn = $('clear-log-btn')
     settingsModal = $('settings-modal')
     settingsBtn = $('settings-btn')
     closeSettingsBtn = $('close-settings')
@@ -152,6 +154,7 @@ function initOperationButtons() {
     settingsBtn.addEventListener('click', showSettingsModal)
     closeSettingsBtn.addEventListener('click', handleCloseSettings)
     settingsModal.addEventListener('click', handleModalBackdropClick)
+    clearLogBtn.addEventListener('click', handleClearLog)
 
     compressBtn.addEventListener('click', () => handleOperationClick('compress'))
     decompressBtn.addEventListener('click', () => handleOperationClick('decompress'))
@@ -574,6 +577,11 @@ async function handleRefreshIcon() {
     } catch (error) {
         addLog(`刷新失败: ${error}`, 'error')
     }
+}
+
+// 清空日志
+function handleClearLog() {
+    logOutput.innerHTML = '<div class="text-muted-foreground/50">日志已清空</div>'
 }
 
 // 更新弹窗相关元素（延迟初始化）

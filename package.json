@@ -15,9 +15,11 @@
         "post-build": "powershell -Command \"New-Item -Path 'src-tauri/target/release/bundle/Portable' -ItemType Directory -Force; Copy-Item 'src-tauri/target/release/UPX-Tools.exe' 'src-tauri/target/release/bundle/Portable/'\""
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "autoprefixer": "^10.4.23",
-        "eslint": "^8.57.1",
+        "eslint": "^9.39.2",
         "eslint-plugin-html": "^8.1.1",
+        "globals": "^17.2.0",
         "postcss": "^8.5.6",
         "postcss-cli": "^11.0.1",
         "prettier": "^3.3.3",

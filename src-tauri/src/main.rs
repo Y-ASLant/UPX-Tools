@@ -501,7 +501,6 @@ fn refresh_icon_cache_internal() {
 }
 
 #[tauri::command]
-#[allow(dead_code)]
 async fn refresh_icon_cache() -> Result<(), String> {
     tokio::task::spawn_blocking(move || {
         #[cfg(target_os = "windows")]

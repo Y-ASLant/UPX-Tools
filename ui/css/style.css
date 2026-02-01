@@ -271,6 +271,177 @@ input[type='checkbox']:focus {
     box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
 }
 
+/* Switch 行样式 */
+.switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.switch-row:hover {
+    background-color: hsl(var(--accent));
+}
+
+.switch-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 帮助图标样式 */
+.help-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted));
+    border-radius: 50%;
+    cursor: help;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.help-icon:hover {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--border));
+}
+
+/* Tooltip 组件 - shadcn/ui 风格 */
+.tooltip {
+    position: relative;
+    display: inline-flex;
+}
+
+.tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    background-color: hsl(var(--muted));
+    border-radius: 50%;
+    cursor: help;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tooltip-trigger:hover {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--border));
+}
+
+.tooltip-content {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: nowrap;
+    border-radius: 6px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.15s ease;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Tooltip 箭头 */
+.tooltip-content::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: hsl(var(--primary));
+}
+
+/* Hover 显示 */
+.tooltip:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 长文本自动换行 */
+.tooltip-content.tooltip-wrap {
+    white-space: normal;
+    width: max-content;
+    max-width: 200px;
+    text-align: center;
+}
+
+/* Switch 开关样式 */
+.switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: hsl(var(--border));
+    border-radius: 20px;
+    transition: all 0.2s ease;
+}
+
+.switch-slider::before {
+    position: absolute;
+    content: '';
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.switch input:checked + .switch-slider {
+    background-color: hsl(var(--primary));
+}
+
+.switch input:checked + .switch-slider::before {
+    transform: translateX(16px);
+}
+
+.switch input:focus + .switch-slider {
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
 /* 滑动条样式 */
 input[type='range'].slider {
     -webkit-appearance: none;
@@ -379,6 +550,33 @@ input[type='range'].slider::-moz-range-thumb:active {
 /* 进度条 */
 .progress-bar {
     transition: width 0.3s ease;
+}
+
+/* 进度条动画 */
+.progress-bar-animated {
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-animated::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 /* 文件拖放区域 */

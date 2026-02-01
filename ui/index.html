@@ -231,12 +231,12 @@
             <div class="card p-6 w-full mx-4 modal-content" style="max-width: 640px">
                 <h2 class="text-lg font-semibold text-foreground mb-5">全局设置</h2>
 
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <!-- 压缩级别 -->
-                    <div class="bg-muted p-4 rounded-md">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="text-sm font-medium text-foreground">压缩级别</label>
-                            <span id="level-display" class="text-sm font-semibold text-primary">
+                    <div class="bg-muted px-3 py-2.5 rounded-md">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-medium text-foreground">压缩级别</label>
+                            <span id="level-display" class="text-xs font-semibold text-primary">
                                 级别 9
                             </span>
                         </div>
@@ -254,120 +254,117 @@
 
                         <p
                             id="level-description"
-                            class="text-xs text-muted-foreground text-center mt-3"
+                            class="text-[10px] text-muted-foreground text-center mt-2"
                         >
                             推荐级别，平衡速度和压缩率
                         </p>
                     </div>
 
-                    <!-- 选项列表 - 双列布局 -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
-                        >
-                            <input
-                                type="checkbox"
-                                id="overwrite"
-                                checked
-                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <span class="text-sm font-medium text-foreground block">
-                                    覆盖原文件
+                    <!-- 选项列表 - 紧凑 Switch 布局 -->
+                    <div class="space-y-1">
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">覆盖原文件</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content">
+                                        直接替换原文件，不创建新文件
+                                    </span>
                                 </span>
-                                <p class="text-xs text-muted-foreground mt-0.5">
-                                    直接替换原文件，不创建新文件
-                                </p>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="overwrite" checked />
+                                <span class="switch-slider"></span>
                             </div>
                         </label>
 
-                        <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
-                        >
-                            <input
-                                type="checkbox"
-                                id="backup"
-                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <span class="text-sm font-medium text-foreground block">
-                                    备份原文件
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">备份原文件</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content">保留 .bak 备份文件</span>
                                 </span>
-                                <p class="text-xs text-muted-foreground mt-0.5">
-                                    保留 .bak 备份文件
-                                </p>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="backup" />
+                                <span class="switch-slider"></span>
                             </div>
                         </label>
 
-                        <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
-                        >
-                            <input
-                                type="checkbox"
-                                id="ultra-brute"
-                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <span class="text-sm font-medium text-foreground block">
-                                    极限压缩
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">极限压缩</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content tooltip-wrap">
+                                        尝试所有压缩方法，速度慢但压缩率最高
+                                    </span>
                                 </span>
-                                <p class="text-xs text-muted-foreground mt-0.5">
-                                    尝试所有压缩方法，速度慢但压缩率最高
-                                </p>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="ultra-brute" />
+                                <span class="switch-slider"></span>
                             </div>
                         </label>
 
-                        <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
-                        >
-                            <input
-                                type="checkbox"
-                                id="include-subfolders"
-                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <span class="text-sm font-medium text-foreground block">
-                                    包含子文件夹
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">包含子文件夹</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content tooltip-wrap">
+                                        处理文件夹时，递归处理所有子目录
+                                    </span>
                                 </span>
-                                <p class="text-xs text-muted-foreground mt-0.5">
-                                    处理文件夹时，递归处理所有子目录
-                                </p>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="include-subfolders" />
+                                <span class="switch-slider"></span>
                             </div>
                         </label>
 
-                        <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
-                        >
-                            <input
-                                type="checkbox"
-                                id="force-compress"
-                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <span class="text-sm font-medium text-foreground block">
-                                    强制压缩
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">强制压缩</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content">强制处理受保护的文件</span>
                                 </span>
-                                <p class="text-xs text-muted-foreground mt-0.5">
-                                    强制处理受保护的文件
-                                </p>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="force-compress" />
+                                <span class="switch-slider"></span>
                             </div>
                         </label>
 
-                        <label
-                            class="flex items-start gap-3 cursor-pointer p-3 border border-border hover:border-primary hover:bg-accent transition-all rounded-md"
-                        >
-                            <input
-                                type="checkbox"
-                                id="lzma"
-                                class="w-4 h-4 mt-0.5 rounded border-input cursor-pointer flex-shrink-0"
-                            />
-                            <div class="flex-1 min-w-0">
-                                <span class="text-sm font-medium text-foreground block">
-                                    LZMA 压缩
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">LZMA 压缩</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content">压缩率更高但速度稍慢</span>
                                 </span>
-                                <p class="text-xs text-muted-foreground mt-0.5">
-                                    压缩率更高但速度稍慢
-                                </p>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="lzma" />
+                                <span class="switch-slider"></span>
+                            </div>
+                        </label>
+
+                        <div class="border-t border-border/50 my-2"></div>
+
+                        <label class="switch-row">
+                            <span class="switch-label">
+                                <span class="text-sm text-foreground">启动时检查更新</span>
+                                <span class="tooltip">
+                                    <span class="tooltip-trigger">?</span>
+                                    <span class="tooltip-content">程序启动时自动检查新版本</span>
+                                </span>
+                            </span>
+                            <div class="switch">
+                                <input type="checkbox" id="auto-check-update" checked />
+                                <span class="switch-slider"></span>
                             </div>
                         </label>
                     </div>
@@ -410,38 +407,42 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-foreground">发现新版本</h2>
-                        <p id="update-version" class="text-sm text-muted-foreground"></p>
+                        <p class="text-sm text-muted-foreground">
+                            <span id="update-version"></span>
+                            <span class="mx-2">|</span>
+                            <span id="update-date"></span>
+                        </p>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-medium text-foreground">更新内容</h3>
-                    <span id="update-date" class="text-xs text-muted-foreground"></span>
-                </div>
-                <div class="bg-muted p-4 rounded-md max-h-32 overflow-y-auto mb-5">
-                    <div id="update-notes" class="text-sm text-muted-foreground space-y-1"></div>
+                <div class="mb-5">
+                    <div class="text-xs font-medium text-foreground/70 mb-2">更新日志</div>
+                    <div class="bg-muted rounded-md p-3 max-h-28 overflow-y-auto">
+                        <div
+                            id="update-notes"
+                            class="text-xs text-muted-foreground space-y-1"
+                        ></div>
+                    </div>
                 </div>
 
                 <!-- 下载选项 -->
-                <div class="space-y-3 mb-5">
-                    <h4 class="text-sm font-medium text-foreground">选择下载版本</h4>
-                    <div id="download-options" class="grid grid-cols-2 gap-4">
-                        <!-- 动态填充下载选项 -->
-                    </div>
+                <div id="download-options" class="grid grid-cols-2 gap-3">
+                    <!-- 动态填充下载选项 -->
                 </div>
 
-                <div id="update-progress" class="hidden">
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1 h-2 bg-border rounded-full overflow-hidden">
-                            <div
-                                id="update-progress-bar"
-                                class="h-full bg-green-500 transition-all duration-300"
-                                style="width: 0%"
-                            ></div>
-                        </div>
-                        <span id="update-progress-text" class="text-xs text-muted-foreground w-8">
+                <div id="update-progress" class="hidden mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-muted-foreground">正在下载...</span>
+                        <span id="update-progress-text" class="text-xs font-medium text-foreground">
                             0%
                         </span>
+                    </div>
+                    <div class="h-2 bg-border rounded-full overflow-hidden">
+                        <div
+                            id="update-progress-bar"
+                            class="progress-bar-animated h-full bg-primary rounded-full"
+                            style="width: 0%"
+                        ></div>
                     </div>
                 </div>
 

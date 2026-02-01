@@ -25,6 +25,7 @@ let compressBtn,
     ultraBruteCheckbox,
     includeSubfoldersCheckbox,
     forceCompressCheckbox,
+    autoCheckUpdateCheckbox,
     logOutput,
     clearLogBtn,
     settingsModal,
@@ -50,6 +51,7 @@ function initDOMElements() {
     ultraBruteCheckbox = $('ultra-brute')
     includeSubfoldersCheckbox = $('include-subfolders')
     forceCompressCheckbox = $('force-compress')
+    autoCheckUpdateCheckbox = $('auto-check-update')
     logOutput = $('log-output')
     clearLogBtn = $('clear-log-btn')
     settingsModal = $('settings-modal')
@@ -885,6 +887,7 @@ async function saveCurrentConfig() {
             ultra_brute: ultraBruteCheckbox.checked,
             include_subfolders: includeSubfoldersCheckbox.checked,
             force_compress: forceCompressCheckbox.checked,
+            auto_check_update: autoCheckUpdateCheckbox.checked,
         }
 
         await invoke('save_config', { config })
@@ -901,6 +904,7 @@ function applyConfigToUI(config) {
     ultraBruteCheckbox.checked = config.ultra_brute
     includeSubfoldersCheckbox.checked = config.include_subfolders
     forceCompressCheckbox.checked = config.force_compress
+    autoCheckUpdateCheckbox.checked = config.auto_check_update !== false
     updateLevelDisplay(config.compression_level)
 }
 
@@ -909,8 +913,15 @@ async function loadSavedConfig() {
         const config = await invoke('load_config')
         applyConfigToUI(config)
         addLog('已加载上次保存的配置', 'info')
+
+        // 根据配置决定是否自动检查更新
+        if (config.auto_check_update !== false) {
+            setTimeout(() => handleCheckUpdate(), 1000)
+        }
     } catch (error) {
         console.error('加载配置失败:', error)
         addLog('使用默认配置', 'info')
+        // 默认自动检查更新
+        setTimeout(() => handleCheckUpdate(), 1000)
     }
 }

@@ -52,6 +52,12 @@ struct AppConfig {
     ultra_brute: bool,
     include_subfolders: bool,
     force_compress: bool,
+    #[serde(default = "default_auto_check_update")]
+    auto_check_update: bool,
+}
+
+fn default_auto_check_update() -> bool {
+    true
 }
 
 impl Default for AppConfig {
@@ -64,6 +70,7 @@ impl Default for AppConfig {
             ultra_brute: false,
             include_subfolders: false,
             force_compress: false,
+            auto_check_update: true,
         }
     }
 }

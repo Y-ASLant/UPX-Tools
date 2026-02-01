@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "UPX-Tools"
-version = "1.4.5"
+version = "1.5.0"
 dependencies = [
  "encoding_rs",
  "reqwest",

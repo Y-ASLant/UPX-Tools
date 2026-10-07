@@ -12,7 +12,7 @@
         "build:css": "npx tailwindcss -i ./ui/css/main.css -o ./ui/css/tailwind.css --minify",
         "watch:css": "npx tailwindcss -i ./ui/css/main.css -o ./ui/css/tailwind.css --watch",
         "build": "cargo tauri build && npm run post-build",
-        "post-build": "powershell -Command \"New-Item -Path 'src-tauri/target/release/bundle/Portable' -ItemType Directory -Force; Copy-Item 'src-tauri/target/release/UPX-Tools.exe' 'src-tauri/target/release/bundle/Portable/'\""
+        "post-build": "powershell -Command \"New-Item -Path 'src-tauri/target/release/bundle/Portable' -ItemType Directory -Force | Out-Null; Copy-Item 'src-tauri/target/release/UPX-Tools.exe' 'src-tauri/target/release/bundle/Portable/'\""
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",

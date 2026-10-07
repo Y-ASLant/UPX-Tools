@@ -154,6 +154,8 @@ npm run watch:css
 
 单独运行 ESLint 自动修复等细项时，使用下面的 npm/Cargo 命令，不再提供重复的 just 入口。
 
+just 默认不回显执行命令，并为子进程设置 `npm_config_loglevel=warn`，隐藏 npm 的 `notice run`；便携版复制不打印 PowerShell 目录对象。工具自身的进度、产物路径、警告和错误仍会显示。
+
 ### 代码检查与格式化
 
 ```bash

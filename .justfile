@@ -1,8 +1,12 @@
 # UPX-Tools 常用命令，运行 `just` 或 `just --list` 查看全部
 
+set quiet
+
+export npm_config_loglevel := 'warn'
+
 [private]
 default:
-    @just --list
+    just --list
 
 # 开发模式运行（热重载，先编译一次 Tailwind CSS）
 dev: css

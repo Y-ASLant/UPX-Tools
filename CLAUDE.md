@@ -61,6 +61,8 @@ cargo clippy --manifest-path src-tauri/Cargo.toml
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
+`.justfile` 使用 `set quiet` 隐藏命令回显，并导出 `npm_config_loglevel=warn` 隐藏 npm notice（包括嵌套调用）；保留工具输出、警告和错误。`post-build` 仅将 `New-Item` 的目录对象输出送入 `Out-Null`，不重定向错误。
+
 ## 代码结构
 
 ### 前端 (ui/)

@@ -164,6 +164,7 @@ batchSize = Math.max(2, Math.min(cpuCores * 2, 16))
 - **缩进**：4 空格
 - **字符串**：单引号优先
 - **分号**：不使用分号结尾
+- **行尾**：LF；`.gitattributes` 使用 `* text=auto eol=lf`，避免 Windows 自动检出 CRLF 导致 CI 的 Prettier 检查失败
 - **命名**：
   - 常量：`UPPER_SNAKE_CASE`
   - 函数/变量：`camelCase`

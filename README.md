@@ -181,6 +181,8 @@ cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -
 
 前端规范：4 空格缩进、单引号优先、不使用行尾分号。修改前端代码后运行 `npm run format`；修改 Rust 后运行 `cargo fmt`。
 
+`.gitattributes` 将文本文件的检出行尾固定为 LF，与 Prettier 保持一致；Windows 的 `core.autocrlf=true` 不再把这些文件检出为 CRLF。二进制文件仍由 Git 自动识别，不转换行尾。
+
 生成的 `ui/css/tailwind.css` 不参与 Prettier 检查；通过 `npm run build:css` 更新，避免格式化与压缩构建反复改写同一文件。
 
 ### 项目结构

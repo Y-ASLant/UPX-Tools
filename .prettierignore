@@ -8,3 +8,4 @@ img/
 dist/
 target/
 package-lock.json
+ui/css/tailwind.css

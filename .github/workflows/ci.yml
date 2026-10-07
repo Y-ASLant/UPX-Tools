@@ -2,45 +2,148 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
-    tags:
-      - 'v*'
+    branches: [main, master]
+    tags: ['v*']
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 env:
   CARGO_TERM_COLOR: always
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  npm_config_loglevel: warn
+  TAURI_CLI_VERSION: '2.12.1'
 
 jobs:
-  test:
+  build:
+    name: Check and build Windows x64
     runs-on: windows-latest
-    if: >
-      contains(github.event.head_commit.message, 'build:') ||
-      contains(github.event.head_commit.message, 'tag') ||
-      startsWith(github.ref, 'refs/tags/') ||
-      github.event_name == 'pull_request'
-    
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
 
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Check formatting
-        working-directory: ./src-tauri
-        run: cargo fmt --all -- --check
+      - name: Validate versions
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw -Encoding utf8 | ConvertFrom-Json).version
+          $tauriVersion = (Get-Content src-tauri/tauri.conf.json -Raw -Encoding utf8 | ConvertFrom-Json).version
+          [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+          $metadata = cargo metadata --manifest-path src-tauri/Cargo.toml --locked --no-deps --format-version 1
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot read Cargo package version' }
+          $cargoVersion = ($metadata | ConvertFrom-Json).packages[0].version
+          if ($version -cne $tauriVersion -or $version -cne $cargoVersion) {
+            throw "Version mismatch: npm=$version, Tauri=$tauriVersion, Cargo=$cargoVersion"
+          }
+          if ($env:GITHUB_REF -like 'refs/tags/*' -and $env:GITHUB_REF -cne "refs/tags/v$version") {
+            throw "Tag $env:GITHUB_REF does not match v$version"
+          }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$version" -Encoding utf8
 
-      - name: Run clippy
-        working-directory: ./src-tauri
-        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Install frontend dependencies
+        run: npm ci
 
-      - name: Run tests
-        working-directory: ./src-tauri
-        run: cargo test
+      - name: Check frontend
+        run: npm run check
+
+      - name: Check Rust
+        run: |
+          cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets --all-features -- -D warnings
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --manifest-path src-tauri/Cargo.toml --locked
+
+      - name: Cache Tauri CLI
+        id: tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-tauri.exe
+          key: tauri-cli-${{ env.TAURI_CLI_VERSION }}-windows-x64
+
+      - name: Install Tauri CLI
+        if: steps.tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "=$env:TAURI_CLI_VERSION" --locked
+
+      - name: Build CSS
+        run: npm run build:css
+
+      - name: Build application and installers
+        run: npm run build
+
+      - name: Prepare artifacts
+        shell: pwsh
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $version = $env:APP_VERSION
+          $files = @{
+            'src-tauri/target/release/bundle/Portable/UPX-Tools.exe' = "UPX-Tools-$version-x64-portable.exe"
+            "src-tauri/target/release/bundle/msi/UPX-Tools_${version}_x64_zh-CN.msi" = "UPX-Tools-$version-x64.msi"
+            "src-tauri/target/release/bundle/nsis/UPX-Tools_${version}_x64-setup.exe" = "UPX-Tools-$version-x64-setup.exe"
+          }
+          foreach ($source in $files.Keys) {
+            if (!(Test-Path -LiteralPath $source -PathType Leaf) -or (Get-Item -LiteralPath $source).Length -eq 0) {
+              throw "Missing or empty build artifact: $source"
+            }
+          }
+          New-Item release -ItemType Directory -Force | Out-Null
+          foreach ($source in $files.Keys) {
+            Copy-Item -LiteralPath $source -Destination (Join-Path release $files[$source])
+          }
+
+      - name: Upload Windows packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: UPX-Tools-Windows-x64
+          path: release/*
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    name: Publish release
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: UPX-Tools-Windows-x64
+          path: release
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/UPX-Tools-${{ needs.build.outputs.version }}-x64-portable.exe
+            release/UPX-Tools-${{ needs.build.outputs.version }}-x64.msi
+            release/UPX-Tools-${{ needs.build.outputs.version }}-x64-setup.exe
+          fail_on_unmatched_files: true
+          prerelease: ${{ contains(needs.build.outputs.version, '-') }}
+          generate_release_notes: true

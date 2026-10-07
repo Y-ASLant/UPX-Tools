@@ -120,11 +120,13 @@ Windows 依赖安装细节见 [Tauri 官方环境要求](https://v2.tauri.app/st
 
 ```bash
 # 安装前端检查、格式化和 CSS 构建依赖
-npm install
+npm ci
 
 # 与 GitHub Actions 一致，安装 Tauri CLI 2
-cargo install tauri-cli --version "^2.0.0" --locked
+cargo install tauri-cli --version "=2.12.1" --locked
 ```
+
+`package-lock.json` 和 `src-tauri/Cargo.lock` 随仓库提交。修改依赖或应用版本后同步更新锁文件；CI 使用 `npm ci` 和 Cargo `--locked`，不在构建中自动更新依赖。
 
 确保 `upx/upx.exe` 存在：Rust 的 `include_bytes!` 在编译时读取它，安装包也将它作为资源打包。当前仓库内的 UPX 可执行文件版本为 **5.2.1**，可运行 `upx/upx.exe --version` 核对。
 
@@ -179,6 +181,8 @@ cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -
 
 前端规范：4 空格缩进、单引号优先、不使用行尾分号。修改前端代码后运行 `npm run format`；修改 Rust 后运行 `cargo fmt`。
 
+生成的 `ui/css/tailwind.css` 不参与 Prettier 检查；通过 `npm run build:css` 更新，避免格式化与压缩构建反复改写同一文件。
+
 ### 项目结构
 
 ```text
@@ -215,10 +219,10 @@ npm run build:css
 npm run build
 
 # 只生成安装包及 release 主程序，不执行 Portable 目录复制
-cargo tauri build
+cargo tauri build -- --locked
 ```
 
-`npm run build` 等价于 `cargo tauri build && npm run post-build`，不会自动编译 CSS；使用 `just build` 则会先构建 CSS，再调用 `npm run build`。
+`npm run build` 等价于 `cargo tauri build -- --locked && npm run post-build`，不会自动编译 CSS；使用 `just build` 则会先构建 CSS，再调用 `npm run build`。便携版复制失败时会中止，不把复制错误当作成功。
 
 ### 本地编译产物
 
@@ -246,9 +250,17 @@ Release profile 使用 `strip`、`opt-level = "z"`、LTO、单个 codegen unit �
 
 ### 版本与 GitHub Actions
 
-发布前同步修改 **三个**版本字段：`package.json`、`src-tauri/Cargo.toml`、`src-tauri/tauri.conf.json`。更新检查的当前版本来自 Cargo 包版本。
+发布前同步修改 **三个**版本字段：`package.json`、`src-tauri/Cargo.toml`、`src-tauri/tauri.conf.json`，并同步更新两个锁文件。更新检查的当前版本来自 Cargo 包版本。
 
-推送 `v{version}` tag 后，`release.yml` 在 Windows 上构建，并发布：
+GitHub Actions 已统一到 `.github/workflows/ci.yml`：
+
+- `main`/`master` 分支推送及面向这两个分支的 PR：检查并构建 Windows x64 包，不再依赖提交消息中的特殊关键字。
+- `v*` tag：执行同样的检查和构建；tag 必须与应用版本精确一致，检查或构建失败时不会发布。
+- 构建 job 使用 Node.js 22、Rust stable 和固定版本的 Tauri CLI 2.12.1；缓存 npm、Rust 和 CLI。
+- 顺序为版本校验、前端 lint/格式检查、Rust 格式/严格 clippy/测试、CSS 构建、安装包和便携版构建。
+- 三种产物必须存在且非空，否则失败；成功后统一上传 `UPX-Tools-Windows-x64` artifact。tag 的发布 job 下载该 artifact，不重新构建。
+
+tag 发布以下文件；版本含 `-` 的预发布版本标记为 prerelease：
 
 | 文件 | 类型 |
 | --- | --- |
@@ -256,11 +268,7 @@ Release profile 使用 `strip`、`opt-level = "z"`、LTO、单个 codegen unit �
 | `UPX-Tools-{version}-x64.msi` | MSI 安装包 |
 | `UPX-Tools-{version}-x64-setup.exe` | NSIS 安装包（当前用户安装） |
 
-其他工作流：
-
-- `ci.yml`：面向 `main`/`master` 的 PR、`v*` tag，以及提交消息包含 `build:` 或 `tag` 的分支推送，运行 Rust 格式检查、严格 clippy 和测试。
-- `build.yml`：面向 `main`/`master` 的 PR 或提交消息包含 `build:` 的分支推送，构建并上传 MSI/NSIS artifact，不复制便携版。
-- 当前工作流不安装 Node.js，也不运行前端检查或 Tailwind 构建；发布前需在本地检查前端并更新 `ui/css/tailwind.css`。
+普通分支/PR 的过时运行会自动取消，tag 运行不会被新运行主动取消。默认权限为 `contents: read`，仅 tag 发布 job 获取 `contents: write`。
 
 ## 相关链接
 

@@ -26,7 +26,7 @@ npm run build:css
 cargo tauri dev
 
 # 编译安装包及 release 主程序（不会自动构建 CSS）
-cargo tauri build
+cargo tauri build -- --locked
 
 # 编译产物位置
 # src-tauri/target/release/bundle/
@@ -44,7 +44,7 @@ npm run build:css     # 编译并压缩 Tailwind CSS
 npm run watch:css     # 监听模式编译 Tailwind CSS
 
 # 完整构建（包含便携版复制）
-npm run build         # 编译 Tauri 并复制便携版到 bundle 目录
+npm run build         # 锁定 Cargo 依赖构建，再复制便携版；复制失败即中止
 
 # 可选 just 快捷入口（6 个常用入口，底层 npm/Cargo 命令仍可单独运行）
 just                  # 显示菜单，默认配方不在列表中显示
@@ -95,9 +95,9 @@ cargo test --manifest-path src-tauri/Cargo.toml
 - `src-tauri/tauri.conf.json` - Tauri 配置，定义窗口属性、权限、打包设置
 - `src-tauri/Cargo.toml` - Rust 依赖，release profile 优化（strip、lto、opt-level=z）
 - `.justfile` - 可选的开发、CSS 构建、检查和格式化快捷入口
-- `.github/workflows/ci.yml` - Rust 格式检查、严格 clippy 和测试
-- `.github/workflows/build.yml` - Windows x64 MSI/NSIS 构建与 artifact 上传
-- `.github/workflows/release.yml` - `v*` tag 自动发布 MSI、NSIS 安装包和 Portable 便携版；不运行前端检查或 CSS 构建
+- `.github/workflows/ci.yml` - 唯一工作流：PR/主分支检查并构建 Windows x64 三种包，`v*` tag 在构建成功后发布已有 artifact
+- `package-lock.json` / `src-tauri/Cargo.lock` - 随仓库提交；CI 使用 `npm ci` 和 Cargo `--locked`
+- `.prettierignore` - 排除生成的 `ui/css/tailwind.css`，不格式化压缩产物
 
 ## 重要细节
 
@@ -183,11 +183,14 @@ batchSize = Math.max(2, Math.min(cpuCores * 2, 16))
 ## 版本发布
 
 1. 同步修改 `src-tauri/Cargo.toml`、`package.json` 和 `src-tauri/tauri.conf.json` 中的版本号；当前版本均为 `1.5.0`，更新检查使用 `env!("CARGO_PKG_VERSION")`
-2. 在本地运行前端检查并更新 CSS；GitHub Actions 不安装 Node.js，也不运行 Tailwind 构建
-3. 推送 tag：`git tag v1.x.x && git push origin v1.x.x`
-4. GitHub Actions 在 Windows x64 上构建并发布 Release，资产版本名取自 tag：
+2. 同步更新两个锁文件，在本地检查前后端；CI 会自动构建 CSS，不依赖提交消息关键字
+3. 推送 tag：`git tag v1.x.x && git push origin v1.x.x`；tag 必须与三个版本字段精确一致
+4. `ci.yml` 的 Windows 构建 job 使用 Node.js 22、Rust stable 和固定的 Tauri CLI 2.12.1，依次执行版本校验、前后端检查、CSS 构建和打包；三种产物缺失或为空时失败
+5. 发布 job 通过 `needs: build` 等待成功后下载 artifact，仅在 tag push 时运行；版本含 `-` 时标记 prerelease。资产名称：
    - `UPX-Tools-{version}-x64.msi` - MSI 安装包
    - `UPX-Tools-{version}-x64-setup.exe` - NSIS 安装包（当前用户安装）
    - `UPX-Tools-{version}-x64-portable.exe` - 便携版（release 主程序副本，单文件内嵌 UPX，仍依赖 WebView2）
 
-构建环境要求 Windows、Rust stable/MSVC、Microsoft C++ Build Tools、WebView2 和 Tauri CLI 2；前端使用受支持的 Node.js LTS。安装 CLI 使用 `cargo install tauri-cli --version "^2.0.0" --locked`，npm CLI 不替代现有脚本中的 `cargo tauri`。
+默认工作流权限为 `contents: read`，只有发布 job 使用 `contents: write`；分支/PR 会取消过时运行，tag 不主动取消正在执行的发布。Tauri CLI 二进制单独缓存，避免每次重新编译 CLI。
+
+构建环境要求 Windows、Rust stable/MSVC、Microsoft C++ Build Tools、WebView2 和 Tauri CLI 2；前端使用 Node.js 22。安装使用 `npm ci` 和 `cargo install tauri-cli --version "=2.12.1" --locked`，npm CLI 不替代脚本中的 `cargo tauri`。

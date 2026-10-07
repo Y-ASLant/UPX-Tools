@@ -104,7 +104,7 @@ cargo test --manifest-path src-tauri/Cargo.toml
 2. **开发路径**：当前工作目录下的 `../upx/upx.exe`（通常在 `src-tauri/` 中运行）
 3. **便携版**：从嵌入的 `EMBEDDED_UPX` 释放到 `%TEMP%/upx-gui-portable/upx.exe`
 
-`EMBEDDED_UPX` 对所有构建无条件嵌入。释放结果通过 `OnceLock<Option<PathBuf>>` 缓存；已有临时文件仅按长度判断是否复用，不校验内容哈希。仓库当前 `upx/upx.exe` 为 UPX 5.1.0，可用 `--version` 核对。
+`EMBEDDED_UPX` 对所有构建无条件嵌入。释放结果通过 `OnceLock<Option<PathBuf>>` 缓存；已有临时文件仅按长度判断是否复用，不校验内容哈希。仓库当前 `upx/upx.exe` 为 UPX 5.2.1，可用 `--version` 核对。
 
 ### 编码处理
 后端使用 `encoding_rs::GBK` 解码 UPX 的标准输出和标准错误，再进行过滤和错误解析。

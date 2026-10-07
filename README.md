@@ -126,7 +126,7 @@ npm install
 cargo install tauri-cli --version "^2.0.0" --locked
 ```
 
-确保 `upx/upx.exe` 存在：Rust 的 `include_bytes!` 在编译时读取它，安装包也将它作为资源打包。当前仓库内的 UPX 可执行文件版本为 **5.1.0**，可运行 `upx/upx.exe --version` 核对。
+确保 `upx/upx.exe` 存在：Rust 的 `include_bytes!` 在编译时读取它，安装包也将它作为资源打包。当前仓库内的 UPX 可执行文件版本为 **5.2.1**，可运行 `upx/upx.exe --version` 核对。
 
 ### 开发与 CSS 构建
 

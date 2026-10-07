@@ -252,6 +252,8 @@ Release profile 使用 `strip`、`opt-level = "z"`、LTO、单个 codegen unit �
 
 发布前同步修改 **三个**版本字段：`package.json`、`src-tauri/Cargo.toml`、`src-tauri/tauri.conf.json`，并同步更新两个锁文件。更新检查的当前版本来自 Cargo 包版本。
 
+先提交包含版本和锁文件更新的改动，再在该提交上创建 tag。工作流读取的是 tag 指向的提交，而不是本地当前文件；重跑失败任务不会自动改用新提交。版本不匹配的旧 tag 若尚未发布 Release，可在确认影响后重建；不要覆盖已经发布的 tag。
+
 GitHub Actions 已统一到 `.github/workflows/ci.yml`：
 
 - `main`/`master` 分支推送及面向这两个分支的 PR：检查并构建 Windows x64 包，不再依赖提交消息中的特殊关键字。

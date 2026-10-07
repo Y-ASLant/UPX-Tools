@@ -182,9 +182,9 @@ batchSize = Math.max(2, Math.min(cpuCores * 2, 16))
 
 ## 版本发布
 
-1. 同步修改 `src-tauri/Cargo.toml`、`package.json` 和 `src-tauri/tauri.conf.json` 中的版本号；当前版本均为 `1.5.0`，更新检查使用 `env!("CARGO_PKG_VERSION")`
+1. 同步修改 `src-tauri/Cargo.toml`、`package.json` 和 `src-tauri/tauri.conf.json` 中的版本号；更新检查使用 `env!("CARGO_PKG_VERSION")`
 2. 同步更新两个锁文件，在本地检查前后端；CI 会自动构建 CSS，不依赖提交消息关键字
-3. 推送 tag：`git tag v1.x.x && git push origin v1.x.x`；tag 必须与三个版本字段精确一致
+3. 先提交版本及锁文件改动，再创建并推送 tag：`git tag v1.x.x && git push origin v1.x.x`；tag 指向的提交必须包含与 tag 一致的三个版本字段。重跑旧任务不会改变 tag 目标，重建已推送但未发布的失败 tag 前需确认影响，不覆盖已发布 tag
 4. `ci.yml` 的 Windows 构建 job 使用 Node.js 22、Rust stable 和固定的 Tauri CLI 2.12.1，依次执行版本校验、前后端检查、CSS 构建和打包；三种产物缺失或为空时失败
 5. 发布 job 通过 `needs: build` 等待成功后下载 artifact，仅在 tag push 时运行；版本含 `-` 时标记 prerelease。资产名称：
    - `UPX-Tools-{version}-x64.msi` - MSI 安装包
